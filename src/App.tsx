@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { ScanLine } from 'lucide-react'
+import { ScanLine, ShieldCheck } from 'lucide-react'
 import Header from './components/Header'
 import TypeSelector, { TypeIcon } from './components/TypeSelector'
 import PreviewPanel from './components/PreviewPanel'
@@ -191,68 +191,80 @@ function AppWorkspace({ settings, history, pendingPayload, onPendingUsed }: AppW
   const meta = TYPE_META[type]
 
   return (
-    <>
-      <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-8 sm:px-6 sm:pt-10 lg:px-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-[28px]">
-          Create beautiful QR codes in seconds
-        </h1>
-        <p className="mt-1.5 max-w-xl text-sm text-ink-2">
-          Paste a link, type a message, or configure Wi-Fi — then download a crisp, scannable
-          QR code. Everything runs privately in your browser.
-        </p>
-
-        <div className="mt-8 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-8">
-          <div className="flex min-w-0 flex-col gap-6">
-            <TypeSelector value={type} onChange={setType} />
-
-            <section
-              key={type}
-              aria-labelledby="form-heading"
-              className="animate-fade-up min-w-0 rounded-2xl border border-stroke bg-surface shadow-card"
-            >
-              <div className="border-b border-stroke px-5 py-4 sm:px-6">
-                <h2 id="form-heading" className="flex items-center gap-2 text-base font-semibold text-ink">
-                  <span className="text-accent">
-                    <TypeIcon type={type} size={19} />
-                  </span>
-                  {meta.title}
-                </h2>
-                <p className="mt-1 text-[13px] text-ink-2">{meta.description}</p>
-              </div>
-              <div className="p-5 sm:p-6">
-                <form onSubmit={(e) => e.preventDefault()} noValidate className="space-y-3">
-                  {renderForm(type, content, update, errors, detectedChip, meta.label, meta.placeholder)}
-                </form>
-              </div>
-            </section>
+    <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pt-8 lg:px-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-[22px] font-semibold tracking-tight text-ink sm:text-[26px]">
+              Create beautiful QR codes in seconds
+            </h1>
+            <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-stroke bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-2 sm:inline-flex">
+              <ShieldCheck size={12} className="text-accent" aria-hidden />
+              100% private
+            </span>
           </div>
-
-          <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start lg:row-span-2">
-            <PreviewPanel
-              type={type}
-              content={content}
-              style={style}
-              payload={payload}
-              hasErrors={hasErrors}
-              defaultFormat={settings.defaultDownloadFormat}
-              onReset={handleReset}
-            />
-          </aside>
-
-          <div className="min-w-0 space-y-6">
-            <QRCustomizer style={style} update={updateStyle} />
-            <HistoryPanel
-              items={history.items}
-              available={history.available}
-              enabled={history.enabled}
-              onRegenerate={handleRegenerate}
-              onRemove={history.remove}
-              onClear={history.clear}
-            />
-          </div>
+          <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-2 sm:text-sm">
+            Pick a type, drop in your content, and download a crisp, scannable QR code —
+            all on this device.
+          </p>
         </div>
       </div>
-    </>
+
+      <div className="mt-6 flex flex-col gap-6 lg:mt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(360px,400px)] lg:items-start lg:gap-8">
+        <div className="flex min-w-0 flex-col gap-6">
+          <TypeSelector value={type} onChange={setType} />
+
+          <section
+            key={type}
+            aria-labelledby="form-heading"
+            className="animate-fade-up min-w-0 rounded-xl border border-stroke bg-surface shadow-card"
+          >
+            <div className="flex items-start gap-3 border-b border-stroke px-5 pb-4 pt-5 sm:px-6">
+              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-accent-soft text-accent">
+                <TypeIcon type={type} size={17} />
+              </span>
+              <div className="min-w-0">
+                <h2 id="form-heading" className="text-[15px] font-semibold tracking-tight text-ink">
+                  {meta.title}
+                </h2>
+                <p className="mt-0.5 text-[13px] leading-relaxed text-ink-2">
+                  {meta.description}
+                </p>
+              </div>
+            </div>
+            <div className="p-5 sm:p-6">
+              <form onSubmit={(e) => e.preventDefault()} noValidate className="space-y-4">
+                {renderForm(type, content, update, errors, detectedChip, meta.label, meta.placeholder)}
+              </form>
+            </div>
+          </section>
+        </div>
+
+        <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start lg:row-span-2">
+          <PreviewPanel
+            type={type}
+            content={content}
+            style={style}
+            payload={payload}
+            hasErrors={hasErrors}
+            defaultFormat={settings.defaultDownloadFormat}
+            onReset={handleReset}
+          />
+        </aside>
+
+        <div className="min-w-0 space-y-6">
+          <QRCustomizer style={style} update={updateStyle} />
+          <HistoryPanel
+            items={history.items}
+            available={history.available}
+            enabled={history.enabled}
+            onRegenerate={handleRegenerate}
+            onRemove={history.remove}
+            onClear={history.clear}
+          />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -303,7 +315,7 @@ function renderForm(
 
 function ScanLoadingIcon() {
   return (
-    <span className="flex h-12 w-12 animate-pulse items-center justify-center rounded-2xl bg-surface-2 text-accent">
+    <span className="flex h-12 w-12 animate-pulse-soft items-center justify-center rounded-2xl bg-surface-2 text-accent">
       <ScanLine size={22} aria-hidden />
     </span>
   )
@@ -312,13 +324,13 @@ function ScanLoadingIcon() {
 function Footer() {
   const { toast } = useToast()
   return (
-    <footer className="border-t border-stroke py-8">
+    <footer className="px-safe border-t border-stroke py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       <p className="text-center text-xs text-ink-3">
         QR Studio — free, private and fully client-side.{' '}
         <button
           type="button"
           onClick={() => toast('Everything runs in your browser — nothing is uploaded.')}
-          className="text-ink-2 underline decoration-stroke-strong underline-offset-2 hover:text-ink"
+          className="font-medium text-ink-2 underline decoration-stroke-strong underline-offset-2 transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
         >
           How it works
         </button>
@@ -353,10 +365,10 @@ export default function App() {
         {mode === 'scan' ? (
           <Suspense
             fallback={
-              <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+              <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-8 sm:px-6 lg:px-8">
                 <div
                   role="status"
-                  className="flex min-h-80 flex-col items-center justify-center gap-3 rounded-2xl border border-stroke bg-surface shadow-card"
+                  className="flex min-h-80 flex-col items-center justify-center gap-3 rounded-xl border border-stroke bg-surface shadow-card"
                 >
                   <ScanLoadingIcon />
                   <p className="text-sm text-ink-2">Loading scanner…</p>
@@ -364,10 +376,12 @@ export default function App() {
               </div>
             }
           >
-            <ScannerPanel
-              onUsePayload={handleScanResult}
-              onClose={() => setMode('create')}
-            />
+            <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pt-8 lg:px-8">
+              <ScannerPanel
+                onUsePayload={handleScanResult}
+                onClose={() => setMode('create')}
+              />
+            </div>
           </Suspense>
         ) : (
           <AppWorkspace

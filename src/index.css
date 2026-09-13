@@ -2,38 +2,49 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ============================== Design tokens ============================== */
+
 :root {
-  --c-page: #f6f5f2;
+  /* Surfaces */
+  --c-page: #f6f4f0;
   --c-surface: #ffffff;
-  --c-surface-2: #f1f0ec;
-  --c-stroke: #e5e2dd;
-  --c-stroke-strong: #d2cfc8;
+  --c-surface-2: #f2f0eb;
+  --c-stroke: #e6e2da;
+  --c-stroke-strong: #d5d0c6;
+
+  /* Text */
   --c-ink: #1c1917;
   --c-ink-2: #57534e;
-  --c-ink-3: #a19c95;
-  --c-accent: #b45309;
+  --c-ink-3: #9b948b;
+
+  /* Brand */
+  --c-accent: #ae4d00;
   --c-accent-ink: #ffffff;
-  --c-accent-soft: #faf0e3;
+  --c-accent-soft: #fbeddb;
+
+  /* Semantic */
   --c-danger: #dc2626;
-  --sh-card: 0 1px 2px 0 rgb(28 25 23 / 0.04), 0 16px 40px -20px rgb(28 25 23 / 0.18);
-  --sh-pop: 0 12px 28px -10px rgb(28 25 23 / 0.22);
+
+  /* Elevation */
+  --sh-card: 0 1px 2px 0 rgb(28 25 23 / 0.04), 0 14px 34px -26px rgb(28 25 23 / 0.22);
+  --sh-pop: 0 18px 44px -16px rgb(28 25 23 / 0.28);
 }
 
 .dark {
-  --c-page: #141311;
-  --c-surface: #1b1a18;
-  --c-surface-2: #24221f;
-  --c-stroke: #2e2c29;
-  --c-stroke-strong: #413e39;
-  --c-ink: #f5f4f2;
-  --c-ink-2: #a8a29e;
-  --c-ink-3: #6f6a64;
-  --c-accent: #f59e0b;
-  --c-accent-ink: #1c1917;
-  --c-accent-soft: #33260f;
+  --c-page: #12110f;
+  --c-surface: #1a1916;
+  --c-surface-2: #23211d;
+  --c-stroke: #2e2b26;
+  --c-stroke-strong: #423e36;
+  --c-ink: #f4f2ee;
+  --c-ink-2: #a9a298;
+  --c-ink-3: #71695f;
+  --c-accent: #e8a14a;
+  --c-accent-ink: #17130e;
+  --c-accent-soft: #34281a;
   --c-danger: #f87171;
-  --sh-card: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 16px 40px -20px rgb(0 0 0 / 0.6);
-  --sh-pop: 0 12px 28px -10px rgb(0 0 0 / 0.7);
+  --sh-card: 0 1px 2px 0 rgb(0 0 0 / 0.35), 0 14px 34px -26px rgb(0 0 0 / 0.55);
+  --sh-pop: 0 18px 44px -16px rgb(0 0 0 / 0.7);
 }
 
 @theme inline {
@@ -52,12 +63,15 @@
   --shadow-card: var(--sh-card);
   --shadow-pop: var(--sh-pop);
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 }
 
+/* ================================== Base ================================== */
+
 html {
   -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -66,22 +80,61 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overflow-wrap: anywhere;
+}
+
+p {
+  overflow-wrap: break-word;
 }
 
 ::selection {
   background-color: color-mix(in srgb, var(--c-accent) 22%, transparent);
 }
 
+/* Autofill must follow the current surface in both themes. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--c-surface) inset;
+  -webkit-text-fill-color: var(--c-ink);
+  caret-color: var(--c-ink);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Safe areas for standalone / notch devices */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+.px-safe {
+  padding-inline: max(env(safe-area-inset-left), env(safe-area-inset-right), 0px);
+}
+
+/* Subtle scrollbars on desktop */
+@media (min-width: 768px) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-stroke-strong) transparent;
+  }
+}
+
+/* ============================== QR checkerboard ============================ */
+
 .checkerboard {
-  background-color: #f5f4f2;
-  background-image: repeating-conic-gradient(#e8e6e2 0% 25%, #f5f4f2 0% 50%);
+  background-color: #ffffff;
+  background-image: repeating-conic-gradient(#eceae4 0% 25%, #ffffff 0% 50%);
   background-size: 18px 18px;
 }
 
 .dark .checkerboard {
-  background-color: #1a1917;
-  background-image: repeating-conic-gradient(#24221f 0% 25%, #1a1917 0% 50%);
+  background-color: #ffffff;
+  background-image: repeating-conic-gradient(#eceae4 0% 25%, #ffffff 0% 50%);
 }
+
+/* ============================ Animations ================================== */
 
 @keyframes toast-in {
   from {
@@ -116,6 +169,16 @@ body {
   }
 }
 
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
 .animate-toast-in {
   animation: toast-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -125,7 +188,11 @@ body {
 }
 
 .animate-fade-up {
-  animation: fade-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fade-up 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 1.6s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -135,59 +202,64 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* ------------------------------ Range slider ------------------------------ */
+/* ============================== Range slider ============================== */
 
 .qr-range {
   -webkit-appearance: none;
   appearance: none;
   height: 6px;
   border-radius: 9999px;
-  background-color: var(--c-stroke-strong);
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--c-accent) 55%, var(--c-stroke-strong)),
+    var(--c-stroke-strong)
+  );
   outline-offset: 4px;
 }
 
 .qr-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 9999px;
+  background-color: var(--c-surface);
+  border: 2px solid var(--c-accent);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  cursor: pointer;
+}
+
+.qr-range::-moz-range-thumb {
   height: 16px;
   width: 16px;
   border-radius: 9999px;
   background-color: var(--c-surface);
   border: 2px solid var(--c-accent);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
-  cursor: pointer;
-}
-
-.qr-range::-moz-range-thumb {
-  height: 14px;
-  width: 14px;
-  border-radius: 9999px;
-  background-color: var(--c-surface);
-  border: 2px solid var(--c-accent);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
   cursor: pointer;
 }
 
 .qr-range::-moz-range-track {
   height: 6px;
   border-radius: 9999px;
-  background-color: var(--c-stroke-strong);
+  background-color: var(--c-stroke);
 }
 
 .qr-range:disabled::-webkit-slider-thumb,
 .qr-range:disabled::-moz-range-thumb {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 .qr-range:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--c-accent) 40%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--c-accent) 45%, transparent);
 }
 
-/* ------------------------------- Color input ------------------------------ */
+/* =============================== Color input ============================== */
 
 .qr-color-input {
   -webkit-appearance: none;
@@ -213,9 +285,10 @@ body {
   outline: 2px solid var(--c-accent);
 }
 
-/* ----------------------------- Mobile fixes ------------------------------ */
+/* ================================ Mobile ================================== */
 
-@media (max-width: 360px) {
+/* Keep native zoom disabled distance by forcing a usable virtual keyboard size. */
+@media (max-width: 420px) {
   html {
     font-size: 16px;
   }

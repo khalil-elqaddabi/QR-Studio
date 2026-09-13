@@ -95,12 +95,12 @@ export default function ScannerPanel({ onUsePayload, onClose }: ScannerPanelProp
   return (
     <section
       aria-label="Scan a QR code"
-      className="min-w-0 rounded-2xl border border-stroke bg-surface shadow-card"
+      className="min-w-0 rounded-xl border border-stroke bg-surface shadow-card"
     >
       <div className="flex items-center justify-between gap-3 border-b border-stroke px-5 py-4 sm:px-6">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
-          <span className="text-accent">
-            <ScanLine size={19} />
+        <h2 className="flex items-center gap-2 text-[15px] font-semibold tracking-tight text-ink">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
+            <ScanLine size={16} />
           </span>
           Scan a QR code
         </h2>
@@ -108,7 +108,7 @@ export default function ScannerPanel({ onUsePayload, onClose }: ScannerPanelProp
           type="button"
           onClick={onClose}
           aria-label="Back to creating"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 active:scale-95"
         >
           <X size={18} aria-hidden />
         </button>
@@ -117,38 +117,40 @@ export default function ScannerPanel({ onUsePayload, onClose }: ScannerPanelProp
       <div className="p-5 sm:p-6">
         {result ? (
           <div className="animate-fade-up space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
-                <Check size={20} aria-hidden />
+            <div className="flex items-start gap-3 rounded-[10px] border border-emerald-300/40 bg-emerald-500/5 p-4 dark:border-emerald-500/30">
+              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                <Check size={18} aria-hidden />
               </span>
-              <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-wider text-ink-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-ink-3">
                   {classified?.label}
                 </p>
                 <p className="truncate text-[15px] font-semibold text-ink">{classified?.title}</p>
+                {classified?.summary && (
+                  <p className="mt-1.5 break-words text-[13px] leading-relaxed text-ink-2">
+                    {classified.summary}
+                  </p>
+                )}
               </div>
             </div>
-            {classified?.summary && (
-              <p className="break-words rounded-lg bg-surface-2 px-3 py-2 text-[13px] text-ink-2">
-                {classified.summary}
-              </p>
-            )}
+
             {classified?.actions.map((action) => (
               <button
                 key={action.id}
                 type="button"
                 onClick={() => handleAction(action)}
-                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-colors hover:border-stroke-strong hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
               >
                 {actionIcon(action.kind)}
                 {action.label}
               </button>
             ))}
+
             <div className="grid grid-cols-2 gap-2.5 pt-1">
               <button
                 type="button"
                 onClick={handleUse}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-ink px-4 text-sm font-semibold text-page shadow-sm transition-all hover:opacity-90 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/40 focus-visible:ring-offset-surface"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-ink px-4 text-sm font-semibold text-page shadow-sm transition-all hover:opacity-90 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/40 focus-visible:ring-offset-surface"
               >
                 <QrCode size={16} aria-hidden />
                 Create a QR for this
@@ -156,7 +158,7 @@ export default function ScannerPanel({ onUsePayload, onClose }: ScannerPanelProp
               <button
                 type="button"
                 onClick={clearResult}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-stroke bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-stroke bg-surface px-4 text-sm font-semibold text-ink transition-colors hover:border-stroke-strong hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
               >
                 Scan another
               </button>
@@ -167,7 +169,7 @@ export default function ScannerPanel({ onUsePayload, onClose }: ScannerPanelProp
             <CameraView videoRef={videoRef} status={status} onStart={start} />
             <div className="flex items-center gap-3" aria-hidden="true">
               <span className="h-px flex-1 bg-stroke" />
-              <span className="text-[11px] font-medium uppercase tracking-wider text-ink-3">
+              <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-ink-3">
                 or upload an image
               </span>
               <span className="h-px flex-1 bg-stroke" />
@@ -185,13 +187,13 @@ export default function ScannerPanel({ onUsePayload, onClose }: ScannerPanelProp
                 if (file) void handleFile(file)
               }}
               className={cn(
-                'flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-6 text-center transition-colors focus-within:ring-2 focus-within:ring-accent/30',
+                'flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-6 text-center transition-colors focus-within:ring-2 focus-within:ring-accent/30',
                 dragOver
-                  ? 'border-accent bg-accent-soft/60'
-                  : 'border-stroke-strong bg-surface-2 hover:border-accent hover:bg-accent-soft/40',
+                  ? 'border-accent bg-accent-soft/50'
+                  : 'border-stroke-strong bg-surface-2/50 hover:border-accent hover:bg-accent-soft/30',
               )}
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-ink-2 shadow-sm">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-stroke bg-surface text-ink-2 shadow-sm">
                 <FileImage size={17} aria-hidden />
               </span>
               <span className="text-[13px] font-medium text-ink">
@@ -228,12 +230,18 @@ function CameraView({
 }) {
   return (
     <div className="space-y-3">
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-surface-2 sm:mx-auto sm:max-w-sm">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-surface-2 sm:mx-auto sm:max-w-sm">
         {status === 'active' ? (
           <>
             <video ref={videoRef} playsInline muted className="h-full w-full object-cover" />
             <div className="pointer-events-none absolute inset-0 grid place-items-center">
-              <span className="h-40 w-40 rounded-2xl border-2 border-white/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.25)]" />
+              <span className="relative block h-48 w-48 shadow-[0_0_0_9999px_rgba(0,0,0,0.25)]">
+                <span className="absolute inset-0 rounded-2xl border-2 border-white/70" />
+                <span className="absolute -left-0.5 -top-0.5 h-6 w-6 rounded-tl-2xl border-l-4 border-t-4 border-white" />
+                <span className="absolute -right-0.5 -top-0.5 h-6 w-6 rounded-tr-2xl border-r-4 border-t-4 border-white" />
+                <span className="absolute -bottom-0.5 -left-0.5 h-6 w-6 rounded-bl-2xl border-b-4 border-l-4 border-white" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-6 w-6 rounded-br-2xl border-b-4 border-r-4 border-white" />
+              </span>
             </div>
           </>
         ) : (
@@ -241,19 +249,19 @@ function CameraView({
             <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface text-ink-3">
               <ScanLine size={22} strokeWidth={1.75} aria-hidden />
             </span>
-            <p className="text-[13px] text-ink-3">{statusMessage(status)}</p>
+            <p className="max-w-[200px] text-[13px] text-ink-3">{statusMessage(status)}</p>
             {(status === 'idle' || status === 'denied' || status === 'error' || status === 'unsupported') && (
               <button
                 type="button"
                 onClick={onStart}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-ink px-4 text-sm font-semibold text-page shadow-sm transition-all hover:opacity-90 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/40 focus-visible:ring-offset-surface"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] bg-ink px-4 text-sm font-semibold text-page shadow-sm transition-all hover:opacity-90 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/40 focus-visible:ring-offset-surface"
               >
                 <ScanLine size={15} aria-hidden />
                 Start camera
               </button>
             )}
             {status === 'starting' && (
-              <p className="text-xs text-ink-3" role="status">
+              <p className="animate-pulse-soft text-xs text-ink-3" role="status">
                 Accessing camera…
               </p>
             )}

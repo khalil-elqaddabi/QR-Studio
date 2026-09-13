@@ -37,7 +37,7 @@ export default function LinkForm({
       </Field>
       <div className="flex min-h-5 items-center">
         {detection && (
-          <span className="animate-chip-in inline-flex items-center gap-1.5 rounded-full border border-stroke bg-surface-2 px-2 py-0.5 text-xs font-medium text-ink-2">
+          <span className="animate-chip-in inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent-soft/70 px-2 py-0.5 text-xs font-medium text-accent">
             <Sparkles aria-hidden size={12} className="text-accent" />
             Detected: {detection}
           </span>

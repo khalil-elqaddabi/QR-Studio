@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { Copy, Download, Link, QrCode, RefreshCcw, Share2, CircleAlert } from 'lucide-react'
+import { Copy, Download, Link, Lock, QrCode, RefreshCcw, Share2, CircleAlert } from 'lucide-react'
 import type { QRContent, QRStyle, QRType } from '../types/qr'
 import { TYPE_LABEL } from '../lib/meta'
 import { TypeIcon } from './TypeSelector'
@@ -239,18 +239,20 @@ export default function PreviewPanel({
   return (
     <section
       aria-label="QR preview and download"
-      className="min-w-0 rounded-2xl border border-stroke bg-surface shadow-card"
+      className="min-w-0 overflow-hidden rounded-xl border border-stroke bg-surface shadow-card"
     >
       <div className="p-5 sm:p-6">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">
             Preview
           </h2>
-          <span className="hidden items-center gap-1.5 rounded-full border border-stroke bg-surface-2 px-2 py-0.5 text-[11px] text-ink-3 sm:inline-flex">
+          <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full border border-stroke bg-surface-2 px-2.5 py-1 text-[11px] font-medium text-ink-2">
             <TypeIcon type={type} size={12} />
-            {TYPE_LABEL[type]}
-            <span aria-hidden>·</span>
-            {style.size}px export
+            <span className="truncate">{TYPE_LABEL[type]}</span>
+            <span aria-hidden className="text-ink-3">
+              ·
+            </span>
+            {style.size}px
           </span>
         </div>
 
@@ -267,13 +269,13 @@ export default function PreviewPanel({
             </div>
           ) : !ready ? (
             <div className="flex min-h-64 flex-col items-center justify-center gap-3.5 px-4 py-10 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-2 text-ink-3">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-stroke bg-surface-2 text-ink-3">
                 <QrCode size={26} strokeWidth={1.75} aria-hidden />
               </span>
               <div>
                 <p className="text-sm font-semibold text-ink">Your QR code will appear here</p>
-                <p className="mx-auto mt-1 max-w-56 text-[13px] text-ink-2">
-                  Enter your content on the left to generate a live preview.
+                <p className="mx-auto mt-1 max-w-56 text-[13px] leading-relaxed text-ink-2">
+                  Start typing on the left — the preview updates live.
                 </p>
               </div>
             </div>
@@ -281,43 +283,45 @@ export default function PreviewPanel({
             <>
               <div
                 className={cn(
-                  'flex justify-center rounded-2xl p-3 sm:p-4',
+                  'flex justify-center rounded-xl py-4',
                   style.transparent && 'checkerboard',
                 )}
               >
                 <canvas
                   ref={canvasRef}
-                  className="h-auto w-full max-w-[320px] rounded-xl shadow-card"
+                  className="h-auto w-full max-w-[300px] rounded-lg shadow-sm"
                   aria-label={`Generated QR code for ${TYPE_LABEL[type].toLowerCase()}`}
                 />
               </div>
               {caption && (
-                <p className="mt-3 truncate text-center text-xs text-ink-3" title={caption}>
+                <p className="mt-2.5 truncate text-center text-xs text-ink-3" title={caption}>
                   {caption}
                 </p>
               )}
               {validationBadge.label && (
-                <p
-                  role="status"
-                  className={cn(
-                    'mx-auto mt-2 inline-block rounded-full px-2.5 py-1 text-[11px] font-medium',
-                    validationBadge.tone === 'good' && 'bg-emerald-500/10 text-emerald-600',
-                    validationBadge.tone === 'warn' && 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-                    validationBadge.tone === 'muted' && 'bg-surface-2 text-ink-3',
-                  )}
-                >
-                  {validationBadge.label}
-                </p>
+                <div className="mt-2 flex justify-center">
+                  <p
+                    role="status"
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium',
+                      validationBadge.tone === 'good' && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+                      validationBadge.tone === 'warn' && 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+                      validationBadge.tone === 'muted' && 'bg-surface-2 text-ink-3',
+                    )}
+                  >
+                    {validationBadge.label}
+                  </p>
+                </div>
               )}
             </>
           )}
         </div>
       </div>
 
-      <div className="space-y-3 border-t border-stroke p-5 sm:p-6">
+      <div className="space-y-2.5 border-t border-stroke border-dashed p-5 sm:p-6">
         <div className="grid grid-cols-2 gap-2.5">
           <DownloadButton
-            label={`PNG ${style.size}px`}
+            label={`PNG · ${style.size}px`}
             emphasized={defaultFormat === 'png'}
             disabled={!ready || busy}
             onClick={() => handleDownload('png')}
@@ -335,29 +339,37 @@ export default function PreviewPanel({
             hint="Copy QR image"
             onClick={handleCopyImage}
             disabled={!ready || busy}
-          >
-            <Copy size={16} aria-hidden />
-          </IconAction>
+            icon={<Copy size={16} aria-hidden />}
+            text="Copy"
+          />
           <IconAction
             label="Copy content"
             hint="Copy content"
             onClick={handleCopyLink}
             disabled={!ready}
-          >
-            <Link size={16} aria-hidden />
-          </IconAction>
+            icon={<Link size={16} aria-hidden />}
+            text="Content"
+          />
           <IconAction
             label="Share QR code"
             hint="Share"
             onClick={handleShare}
             disabled={!ready || busy}
-          >
-            <Share2 size={16} aria-hidden />
-          </IconAction>
-          <IconAction label="Start over" hint="Start over" onClick={onReset}>
-            <RefreshCcw size={15} aria-hidden />
-          </IconAction>
+            icon={<Share2 size={16} aria-hidden />}
+            text="Share"
+          />
+          <IconAction
+            label="Start over"
+            hint="Start over"
+            onClick={onReset}
+            icon={<RefreshCcw size={15} aria-hidden />}
+            text="Reset"
+          />
         </div>
+        <p className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-ink-3">
+          <Lock size={11} aria-hidden />
+          Generates on your device — nothing is uploaded.
+        </p>
       </div>
     </section>
   )
@@ -380,10 +392,10 @@ function DownloadButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold shadow-sm transition-all duration-150 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/40 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-40',
+        'inline-flex h-11 items-center justify-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/40 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.99]',
         emphasized
-          ? 'bg-ink text-page hover:opacity-90'
-          : 'border border-stroke bg-surface text-ink hover:bg-surface-2',
+          ? 'bg-ink text-page shadow-sm hover:opacity-90'
+          : 'border border-stroke bg-surface text-ink hover:border-stroke-strong hover:bg-surface-2',
       )}
     >
       <Download size={16} aria-hidden />
@@ -397,13 +409,15 @@ function IconAction({
   hint,
   onClick,
   disabled,
-  children,
+  icon,
+  text,
 }: {
   label: string
   hint: string
   onClick: () => void
   disabled?: boolean
-  children: ReactNode
+  icon: ReactNode
+  text: string
 }) {
   return (
     <button
@@ -412,9 +426,10 @@ function IconAction({
       title={hint}
       disabled={disabled}
       onClick={onClick}
-      className="inline-flex h-10 items-center justify-center rounded-lg border border-stroke bg-surface text-ink-2 transition-colors duration-150 hover:border-stroke-strong hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-40"
+      className="inline-flex h-12 flex-col items-center justify-center gap-1 rounded-[10px] border border-stroke bg-surface text-ink-2 transition-all duration-150 hover:border-stroke-strong hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
     >
-      {children}
+      {icon}
+      <span className="text-[10px] font-medium">{text}</span>
     </button>
   )
 }

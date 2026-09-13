@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronDown, Download, History, RotateCcw, Trash2 } from 'lucide-react'
 import type { HistoryItem } from '../features/history/HistoryStore'
 import { TYPE_LABEL } from '../lib/meta'
@@ -44,7 +44,14 @@ export default function HistoryPanel({
   onClear,
 }: HistoryPanelProps) {
   const [open, setOpen] = useState(false)
+  const [confirmClear, setConfirmClear] = useState(false)
   const { toast } = useToast()
+
+  useEffect(() => {
+    if (!confirmClear) return
+    const t = window.setTimeout(() => setConfirmClear(false), 4000)
+    return () => clearTimeout(t)
+  }, [confirmClear])
 
   const handleDownload = async (item: HistoryItem) => {
     try {
@@ -76,7 +83,7 @@ export default function HistoryPanel({
   return (
     <section
       aria-labelledby="history-heading"
-      className="min-w-0 rounded-2xl border border-stroke bg-surface shadow-card"
+      className="min-w-0 rounded-xl border border-stroke bg-surface shadow-card"
     >
       <button
         type="button"
@@ -87,7 +94,7 @@ export default function HistoryPanel({
       >
         <span className="flex items-center gap-2.5">
           <History size={16} className="text-ink-3" aria-hidden />
-          <span id="history-heading" className="text-sm font-semibold text-ink">
+          <span id="history-heading" className="text-[15px] font-semibold tracking-tight text-ink">
             History
           </span>
           {items.length > 0 && (
@@ -116,12 +123,12 @@ export default function HistoryPanel({
         <div className={cn('overflow-hidden', !open && 'invisible')}>
           <div className="space-y-3 border-t border-stroke px-5 py-4 sm:px-6">
             {!available ? (
-              <p className="rounded-lg bg-surface-2 px-3 py-2.5 text-xs text-ink-3">
+              <p className="rounded-[10px] bg-surface-2 px-3.5 py-2.5 text-xs text-ink-3">
                 Local history isn’t available in this browser — the app keeps working, codes
                 just won’t be stored.
               </p>
             ) : !enabled ? (
-              <p className="rounded-lg bg-surface-2 px-3 py-2.5 text-xs text-ink-3">
+              <p className="rounded-[10px] bg-surface-2 px-3.5 py-2.5 text-xs text-ink-3">
                 History is paused. Turn it back on in Settings to start saving codes again.
               </p>
             ) : items.length === 0 ? (
@@ -130,16 +137,16 @@ export default function HistoryPanel({
               </p>
             ) : (
               <>
-                <ul className="space-y-2.5">
+                <ul className="space-y-2">
                   {items.map((item) => {
                     const type = (item.type as QRType) in TYPE_LABEL ? (item.type as QRType) : 'text'
                     return (
                       <li
                         key={item.id}
-                        className="flex items-center gap-3 rounded-xl border border-stroke bg-surface-2/60 p-3"
+                        className="flex items-center gap-3 rounded-[10px] border border-stroke bg-surface-2/50 p-2.5 transition-colors hover:bg-surface-2"
                       >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface text-accent shadow-sm">
-                          <TypeIcon type={type} size={18} />
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface shadow-sm text-accent">
+                          <TypeIcon type={type} size={17} />
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[13px] font-medium text-ink">
@@ -149,47 +156,67 @@ export default function HistoryPanel({
                             {payloadSnippet(item.payload)} · {relativeTime(item.createdAt)}
                           </p>
                         </div>
-                        <div className="flex shrink-0 items-center gap-1">
-                          <button
-                            type="button"
-                            aria-label="Regenerate this QR code"
+                        <div className="flex shrink-0 items-center gap-0.5">
+                          <ActionBtn
+                            label="Regenerate this QR code"
                             title="Regenerate"
                             onClick={() => onRegenerate(item)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-surface hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
                           >
                             <RotateCcw size={14} aria-hidden />
-                          </button>
-                          <button
-                            type="button"
-                            aria-label="Download this QR code"
+                          </ActionBtn>
+                          <ActionBtn
+                            label="Download this QR code"
                             title="Download"
                             onClick={() => handleDownload(item)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-surface hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
                           >
                             <Download size={14} aria-hidden />
-                          </button>
-                          <button
-                            type="button"
-                            aria-label="Delete from history"
+                          </ActionBtn>
+                          <ActionBtn
+                            label="Delete from history"
                             title="Delete"
                             onClick={() => onRemove(item.id)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-surface hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+                            danger
                           >
                             <Trash2 size={14} aria-hidden />
-                          </button>
+                          </ActionBtn>
                         </div>
                       </li>
                     )
                   })}
                 </ul>
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={onClear}
-                    className="rounded-lg px-2 py-1 text-xs font-medium text-ink-3 transition-colors hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-                  >
-                    Clear all history
-                  </button>
+                <div className="pt-1">
+                  {confirmClear ? (
+                    <div className="flex items-center justify-between gap-2 rounded-[10px] bg-danger/10 px-3 py-2 text-xs text-danger">
+                      <span className="font-medium">Clear all history?</span>
+                      <span className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClear()
+                            setConfirmClear(false)
+                          }}
+                          className="rounded-md px-2 py-1 font-semibold transition-colors hover:bg-danger/15"
+                        >
+                          Clear
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmClear(false)}
+                          className="rounded-md px-2 py-1 font-medium text-danger/80 transition-colors hover:bg-danger/10"
+                        >
+                          Cancel
+                        </button>
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmClear(true)}
+                      className="rounded-lg px-2 py-1 text-xs font-medium text-ink-3 transition-colors hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+                    >
+                      Clear all history
+                    </button>
+                  )}
                 </div>
               </>
             )}
@@ -197,5 +224,36 @@ export default function HistoryPanel({
         </div>
       </div>
     </section>
+  )
+}
+
+function ActionBtn({
+  label,
+  title,
+  onClick,
+  danger = false,
+  children,
+}: {
+  label: string
+  title: string
+  onClick: () => void
+  danger?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={title}
+      onClick={onClick}
+      className={cn(
+        'inline-flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 active:scale-95',
+        danger
+          ? 'text-ink-3 hover:bg-danger/10 hover:text-danger'
+          : 'text-ink-2 hover:bg-surface hover:text-ink',
+      )}
+    >
+      {children}
+    </button>
   )
 }
