@@ -1,8 +1,11 @@
-import { useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { ScanLine } from 'lucide-react'
 import Header from './components/Header'
 import TypeSelector, { TypeIcon } from './components/TypeSelector'
 import PreviewPanel from './components/PreviewPanel'
 import QRCustomizer from './components/QRCustomizer'
+import HistoryPanel from './components/HistoryPanel'
+import SettingsDialog from './components/SettingsDialog'
 import { ToastProvider, useToast } from './components/Toast'
 import LinkForm from './components/forms/LinkForm'
 import TextForm from './components/forms/TextForm'
@@ -18,8 +21,18 @@ import type { QRContent, QRStyle, QRType } from './types/qr'
 import { buildPayload } from './lib/qr'
 import { validateType } from './lib/validation'
 import { detect, parseMailtoContent, parseTelContent, parseWifiContent } from './lib/detection'
-import { TYPE_META } from './lib/meta'
+import { TYPE_LABEL, TYPE_META } from './lib/meta'
+import { titleFor, pickContentFields } from './lib/title'
 import { useTheme } from './hooks/useTheme'
+import { useSettings } from './features/settings/useSettings'
+import type { AppSettings } from './features/settings/types'
+import { useHistory } from './features/history/useHistory'
+import type { HistoryItem } from './features/history/HistoryStore'
+import { makeLogoThumb } from './features/logo/processLogo'
+
+export type AppMode = 'create' | 'scan'
+
+const ScannerPanel = lazy(() => import('./components/ScannerPanel'))
 
 const LINK_TYPES: ReadonlySet<QRType> = new Set<QRType>([
   'url',
@@ -31,12 +44,24 @@ const LINK_TYPES: ReadonlySet<QRType> = new Set<QRType>([
   'whatsapp',
 ])
 
-function AppWorkspace() {
+interface AppWorkspaceProps {
+  settings: AppSettings
+  history: ReturnType<typeof useHistory>
+  pendingPayload: string | null
+  onPendingUsed: () => void
+}
+
+function AppWorkspace({ settings, history, pendingPayload, onPendingUsed }: AppWorkspaceProps) {
   const [type, setType] = useState<QRType>('url')
   const [content, setContent] = useState<QRContent>(EMPTY_CONTENT)
-  const [style, setStyle] = useState<QRStyle>(DEFAULT_STYLE)
+  const [style, setStyle] = useState<QRStyle>(() => ({
+    ...DEFAULT_STYLE,
+    style: settings.defaultStyle,
+    errorCorrection: settings.defaultErrorCorrection,
+  }))
   const [detectedChip, setDetectedChip] = useState<string | null>(null)
   const chipTimer = useRef<number | null>(null)
+  const saveTimer = useRef<number | null>(null)
 
   const typeRef = useRef(type)
   typeRef.current = type
@@ -44,6 +69,25 @@ function AppWorkspace() {
   const payload = useMemo(() => buildPayload(type, content), [type, content])
   const errors = useMemo(() => validateType(type, content), [type, content])
   const hasErrors = Object.keys(errors).length > 0
+
+  // Load a scanned payload into the create workspace.
+  useEffect(() => {
+    if (!pendingPayload) return
+    const result = detect(pendingPayload)
+    if (result) {
+      setType(result.type)
+      const base: QRContent = { ...EMPTY_CONTENT, ...result.content }
+      if (result.type === 'text' && !base.text.trim()) base.text = pendingPayload
+      setContent(base)
+      showChip(result.label)
+    } else {
+      setType('text')
+      setContent({ ...EMPTY_CONTENT, text: pendingPayload })
+      clearChip()
+    }
+    onPendingUsed()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingPayload])
 
   const clearChip = () => {
     if (chipTimer.current !== null) {
@@ -97,13 +141,51 @@ function AppWorkspace() {
   }
 
   const updateStyle = (patch: Partial<QRStyle>) => {
-    setStyle((prev) => ({ ...prev, ...patch }))
+    setStyle((prev) => {
+      let next: QRStyle = { ...prev, ...patch }
+      if (patch.iconEnabled) next = { ...next, logo: null }
+      if (patch.logo) next = { ...next, iconEnabled: false }
+      if ('logo' in patch && patch.logo === null && prev.logo) next = { ...next, iconEnabled: true }
+      return next
+    })
   }
 
   const handleReset = () => {
     clearChip()
     setContent({ ...EMPTY_CONTENT })
     setType('url')
+  }
+
+  // Auto-save debounced history entry whenever a valid code is shown.
+  useEffect(() => {
+    if (!settings.historyEnabled || !history.available || !payload || hasErrors) return
+    if (saveTimer.current !== null) window.clearTimeout(saveTimer.current)
+    saveTimer.current = window.setTimeout(async () => {
+      saveTimer.current = null
+      const logo = style.logo ? await makeLogoThumb(style.logo) : null
+      history.add({
+        title: titleFor(type, content),
+        type,
+        payload,
+        fields: pickContentFields(type, content),
+        style: { ...style, logo },
+      })
+    }, 1400)
+    return () => {
+      if (saveTimer.current !== null) {
+        window.clearTimeout(saveTimer.current)
+        saveTimer.current = null
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payload, hasErrors, type, content, style, settings.historyEnabled, history])
+
+  const handleRegenerate = (item: HistoryItem) => {
+    const target = (item.type as QRType) in TYPE_LABEL ? (item.type as QRType) : 'text'
+    setType(target)
+    setContent({ ...EMPTY_CONTENT, ...item.fields } as QRContent)
+    setStyle(item.style)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const meta = TYPE_META[type]
@@ -152,12 +234,21 @@ function AppWorkspace() {
               style={style}
               payload={payload}
               hasErrors={hasErrors}
+              defaultFormat={settings.defaultDownloadFormat}
               onReset={handleReset}
             />
           </aside>
 
-          <div className="min-w-0">
+          <div className="min-w-0 space-y-6">
             <QRCustomizer style={style} update={updateStyle} />
+            <HistoryPanel
+              items={history.items}
+              available={history.available}
+              enabled={history.enabled}
+              onRegenerate={handleRegenerate}
+              onRemove={history.remove}
+              onClear={history.clear}
+            />
           </div>
         </div>
       </div>
@@ -210,6 +301,14 @@ function renderForm(
   }
 }
 
+function ScanLoadingIcon() {
+  return (
+    <span className="flex h-12 w-12 animate-pulse items-center justify-center rounded-2xl bg-surface-2 text-accent">
+      <ScanLine size={22} aria-hidden />
+    </span>
+  )
+}
+
 function Footer() {
   const { toast } = useToast()
   return (
@@ -230,12 +329,63 @@ function Footer() {
 
 export default function App() {
   const { theme, toggle } = useTheme()
+  const { settings, update: updateSettings, reset: resetSettings, persisted } = useSettings()
+  const history = useHistory(settings.historyEnabled)
+  const [mode, setMode] = useState<AppMode>('create')
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [pendingPayload, setPendingPayload] = useState<string | null>(null)
+
+  const handleScanResult = (payload: string) => {
+    setPendingPayload(payload)
+    setMode('create')
+  }
+
   return (
     <ToastProvider>
       <div className="flex min-h-screen flex-col">
-        <Header theme={theme} onToggleTheme={toggle} />
-        <AppWorkspace />
+        <Header
+          theme={theme}
+          onToggleTheme={toggle}
+          mode={mode}
+          onModeChange={setMode}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
+        {mode === 'scan' ? (
+          <Suspense
+            fallback={
+              <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+                <div
+                  role="status"
+                  className="flex min-h-80 flex-col items-center justify-center gap-3 rounded-2xl border border-stroke bg-surface shadow-card"
+                >
+                  <ScanLoadingIcon />
+                  <p className="text-sm text-ink-2">Loading scanner…</p>
+                </div>
+              </div>
+            }
+          >
+            <ScannerPanel
+              onUsePayload={handleScanResult}
+              onClose={() => setMode('create')}
+            />
+          </Suspense>
+        ) : (
+          <AppWorkspace
+            settings={settings}
+            history={history}
+            pendingPayload={pendingPayload}
+            onPendingUsed={() => setPendingPayload(null)}
+          />
+        )}
         <Footer />
+        <SettingsDialog
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          settings={settings}
+          update={updateSettings}
+          reset={resetSettings}
+          persisted={persisted}
+        />
       </div>
     </ToastProvider>
   )

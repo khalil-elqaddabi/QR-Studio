@@ -1,109 +1,6 @@
 import QRCode from 'qrcode'
-import type { DotStyle, ErrorCorrection, QRContent, QRType } from '../types/qr'
-import { glyphMarkup, iconDataUrl } from './icons'
-
-export function normalizeUrl(raw: string): string {
-  const t = raw.trim()
-  if (!t) return t
-  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(t)) return t
-  return `https://${t}`
-}
-
-export function digitOnly(raw: string): string {
-  return raw.replace(/[^\d]/g, '')
-}
-
-function vcardEscape(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
-}
-
-function wifiEscape(value: string): string {
-  return value.replace(/([\\;,:"])/g, '\\$1')
-}
-
-export function buildPayload(type: QRType, c: QRContent): string | null {
-  switch (type) {
-    case 'url':
-    case 'youtube':
-    case 'instagram':
-    case 'facebook':
-    case 'x':
-    case 'linkedin': {
-      const url = normalizeUrl(c.url)
-      return url || null
-    }
-    case 'text':
-      return c.text.trim() || null
-    case 'email': {
-      const email = c.email.trim()
-      if (!email) return null
-      const params: string[] = []
-      if (c.subject.trim()) params.push(`subject=${encodeURIComponent(c.subject.trim())}`)
-      if (c.body.trim()) params.push(`body=${encodeURIComponent(c.body.trim())}`)
-      return `mailto:${email}${params.length ? `?${params.join('&')}` : ''}`
-    }
-    case 'phone': {
-      const num = digitOnly(c.phone)
-      return num ? `tel:${num}` : null
-    }
-    case 'sms': {
-      const num = digitOnly(c.phone)
-      if (!num) return null
-      const msg = c.smsMessage.trim()
-      return msg ? `SMSTO:${num}:${msg}` : `SMSTO:${num}`
-    }
-    case 'whatsapp': {
-      const num = digitOnly(c.whatsappNumber)
-      if (!num) return null
-      const msg = c.whatsappMessage.trim()
-      return msg
-        ? `https://wa.me/${num}?text=${encodeURIComponent(msg)}`
-        : `https://wa.me/${num}`
-    }
-    case 'wifi': {
-      const ssid = c.ssid.trim()
-      if (!ssid) return null
-      const parts: string[] = [`T:${c.security === 'nopass' ? 'nopass' : c.security}`]
-      parts.push(`S:${wifiEscape(ssid)}`)
-      if (c.security !== 'nopass' && c.password) parts.push(`P:${wifiEscape(c.password)}`)
-      if (c.hidden) parts.push('H:true')
-      return `WIFI:${parts.join(';')};;`
-    }
-    case 'contact': {
-      const hasAnything =
-        c.firstName.trim() ||
-        c.lastName.trim() ||
-        c.organization.trim() ||
-        c.contactPhone.trim() ||
-        c.contactEmail.trim() ||
-        c.website.trim() ||
-        c.address.trim()
-      if (!hasAnything) return null
-      const lines: string[] = ['BEGIN:VCARD', 'VERSION:3.0']
-      const first = c.firstName.trim()
-      const last = c.lastName.trim()
-      if (first || last) {
-        lines.push(`N:${vcardEscape(last)};${vcardEscape(first)};;;`)
-        lines.push(`FN:${vcardEscape(`${first} ${last}`.trim())}`)
-      }
-      if (c.organization.trim()) lines.push(`ORG:${vcardEscape(c.organization.trim())}`)
-      if (c.contactPhone.trim()) lines.push(`TEL;TYPE=CELL:${c.contactPhone.trim()}`)
-      if (c.contactEmail.trim()) lines.push(`EMAIL:${c.contactEmail.trim()}`)
-      if (c.website.trim()) lines.push(`URL:${normalizeUrl(c.website)}`)
-      if (c.address.trim()) lines.push(`ADR;TYPE=HOME:;;${vcardEscape(c.address.trim())};;;;`)
-      lines.push('END:VCARD')
-      return lines.join('\r\n')
-    }
-    case 'location': {
-      const lat = c.latitude.trim()
-      const lng = c.longitude.trim()
-      if (!lat || !lng) return null
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`
-    }
-  }
-}
-
-export const EC_LEVELS: ErrorCorrection[] = ['L', 'M', 'Q', 'H']
+import type { DotStyle, ErrorCorrection, QRLogo, QRType } from '../../types/qr'
+import { glyphMarkup, iconDataUrl } from '../icons'
 
 export interface ModuleMatrix {
   count: number
@@ -170,6 +67,18 @@ export function glyphColorFor(foreground: string): string {
   return luminance < 150 ? foreground : ICON_GLYPH_INK
 }
 
+/**
+ * A center icon or custom logo masks part of the data area, so the highest
+ * error correction level is required to keep the code readable.
+ */
+export function effectiveErrorCorrection(
+  errorCorrection: ErrorCorrection,
+  iconEnabled: boolean,
+  logo: QRLogo | null,
+): ErrorCorrection {
+  return iconEnabled || logo ? 'H' : errorCorrection
+}
+
 export interface QRRenderOptions {
   payload: string
   foreground: string
@@ -180,6 +89,7 @@ export interface QRRenderOptions {
   style: DotStyle
   iconType: QRType | null
   iconRatio: number
+  logo?: QRLogo | null
   size: number
 }
 
@@ -215,7 +125,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve(img)
-    img.onerror = () => reject(new Error('Failed to load icon'))
+    img.onerror = () => reject(new Error('Failed to load image'))
     img.src = src
   })
 }
@@ -260,7 +170,29 @@ export async function renderQRToCanvas(opts: QRRenderOptions): Promise<HTMLCanva
     }
   }
 
-  if (opts.iconType) {
+  if (opts.logo) {
+    const img = await loadImage(opts.logo.dataUrl)
+    const chip = opts.size * (opts.logo.size / 100)
+    const cx = opts.size / 2
+    const cy = opts.size / 2
+    const left = Math.round(cx - chip / 2)
+    const top = Math.round(cy - chip / 2)
+    const chipInt = Math.round(chip)
+    ctx.save()
+    if (opts.logo.shape === 'circle') {
+      ctx.beginPath()
+      ctx.arc(cx, cy, chipInt / 2, 0, Math.PI * 2)
+      ctx.clip()
+    } else {
+      ctx.beginPath()
+      ctx.roundRect(left, top, chipInt, chipInt, Math.min(chipInt * 0.22, 24))
+      ctx.clip()
+    }
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(left, top, chipInt, chipInt)
+    drawCover(ctx, img, left, top, chipInt, chipInt)
+    ctx.restore()
+  } else if (opts.iconType) {
     const glyphColor = glyphColorFor(opts.foreground)
     const iconUrl = iconDataUrl(opts.iconType, { glyphColor })
     const img = await loadImage(iconUrl)
@@ -268,12 +200,26 @@ export async function renderQRToCanvas(opts: QRRenderOptions): Promise<HTMLCanva
     const cx = opts.size / 2
     const cy = opts.size / 2
     ctx.fillStyle = '#ffffff'
-    ctx.fill(roundRectPath(Math.round(cx - chip / 2), Math.round(cy - chip / 2), Math.round(chip), Math.round(chip * 0.26)))
+    ctx.fill(roundRectPath(Math.round(cx - chip / 2), Math.round(cy - chip / 2), Math.round(chip), Math.round(chip) * 0.26))
     const glyph = chip * 0.64
     ctx.drawImage(img, Math.round(cx - glyph / 2), Math.round(cy - glyph / 2), Math.round(glyph), Math.round(glyph))
   }
 
   return canvas
+}
+
+function drawCover(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): void {
+  const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight)
+  const dw = img.naturalWidth * scale
+  const dh = img.naturalHeight * scale
+  ctx.drawImage(img, x - (dw - w) / 2, y - (dh - h) / 2, dw, dh)
 }
 
 function modulePath(row: number, col: number, style: DotStyle, inFinder: boolean): string {
@@ -313,17 +259,34 @@ export function renderQRToSVG(opts: QRRenderOptions): string {
     }
   }
 
-  let icon = ''
-  if (opts.iconType) {
+  let center = ''
+  if (opts.logo) {
+    const chip = view * (opts.logo.size / 100)
+    const cx = view / 2
+    const cy = view / 2
+    const left = cx - chip / 2
+    const top = cy - chip / 2
+    const rounded = opts.logo.shape === 'circle'
+    const clipId = rounded ? 'qr-logo-circle' : 'qr-logo-round'
+    const clipPath = rounded
+      ? `<circle cx="${cx}" cy="${cy}" r="${chip / 2}"/>`
+      : `<rect x="${left}" y="${top}" width="${chip}" height="${chip}" rx="${Math.min(chip * 0.22, 24)}"/>`
+    const imageHref = opts.logo.dataUrl.replace(/&/g, '&amp;')
+    center += `<defs><clipPath id="${clipId}">${clipPath}</clipPath></defs>`
+    center += `<g clip-path="url(#${clipId})">`
+    center += `<rect x="${left}" y="${top}" width="${chip}" height="${chip}" fill="#ffffff"/>`
+    center += `<image href="${imageHref}" x="${left}" y="${top}" width="${chip}" height="${chip}" preserveAspectRatio="xMidYMid slice"/>`
+    center += `</g>`
+  } else if (opts.iconType) {
     const chip = view * opts.iconRatio
     const cx = view / 2
     const cy = view / 2
     const chipRadius = chip * 0.26
-    icon += `<rect x="${(cx - chip / 2).toFixed(4)}" y="${(cy - chip / 2).toFixed(4)}" width="${chip.toFixed(4)}" height="${chip.toFixed(4)}" rx="${chipRadius.toFixed(4)}" fill="#ffffff"/>`
+    center += `<rect x="${(cx - chip / 2).toFixed(4)}" y="${(cy - chip / 2).toFixed(4)}" width="${chip.toFixed(4)}" height="${chip.toFixed(4)}" rx="${chipRadius.toFixed(4)}" fill="#ffffff"/>`
     const glyph = chip * 0.64
     const scale = glyph / 24
     const glyphColor = glyphColorFor(opts.foreground)
-    icon += `<g transform="translate(${(cx - glyph / 2).toFixed(4)} ${(cy - glyph / 2).toFixed(4)}) scale(${scale.toFixed(4)})" stroke="${glyphColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">${glyphMarkup(opts.iconType)}</g>`
+    center += `<g transform="translate(${(cx - glyph / 2).toFixed(4)} ${(cy - glyph / 2).toFixed(4)}) scale(${scale.toFixed(4)})" stroke="${glyphColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">${glyphMarkup(opts.iconType)}</g>`
   }
 
   const backgroundRect = opts.transparent
@@ -335,7 +298,7 @@ export function renderQRToSVG(opts: QRRenderOptions): string {
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${width}" viewBox="0 0 ${view} ${view}">`,
     backgroundRect,
     `<path fill="${opts.foreground}" d="${path}"/>`,
-    icon,
+    center,
     '</svg>',
   ].join('')
 }

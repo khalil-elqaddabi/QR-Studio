@@ -14,12 +14,18 @@ function preferredTheme(): Theme {
   return 'light'
 }
 
+function syncThemeColor(theme: Theme) {
+  const meta = document.querySelector('meta[name="theme-color"]')
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#141311' : '#f6f5f2')
+}
+
 export function useTheme(): { theme: Theme; toggle: () => void } {
   const [theme, setTheme] = useState<Theme>(preferredTheme)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
     window.localStorage.setItem(STORAGE_KEY, theme)
+    syncThemeColor(theme)
   }, [theme])
 
   const toggle = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'))

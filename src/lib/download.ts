@@ -72,28 +72,3 @@ export async function copyText(text: string): Promise<boolean> {
     return false
   }
 }
-
-export async function shareQR(
-  canvas: HTMLCanvasElement,
-  text: string,
-  filename: string,
-): Promise<'shared' | 'unsupported' | 'cancelled'> {
-  if (!navigator.share) return 'unsupported'
-  try {
-    const blob = await canvasToBlob(canvas)
-    const file = new File([blob], filename, { type: 'image/png' })
-    const data: ShareData =
-      navigator.canShare && navigator.canShare({ files: [file] })
-        ? { title: 'QR code', files: [file], text }
-        : { title: 'QR code', text }
-    await navigator.share(data)
-    return 'shared'
-  } catch {
-    return 'cancelled'
-  }
-}
-
-export function downloadFileName(type: string): string {
-  if (type === 'url' || type === 'text') return 'qr-code'
-  return `${type}-qr-code`
-}

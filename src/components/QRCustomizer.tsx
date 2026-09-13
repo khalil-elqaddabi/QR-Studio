@@ -1,9 +1,17 @@
-import { useState } from 'react'
-import { ChevronDown, SlidersHorizontal } from 'lucide-react'
-import type { DotStyle, ErrorCorrection, QRStyle } from '../types/qr'
+import { useRef, useState } from 'react'
+import { Bell, ChevronDown, Image as ImageIcon, SlidersHorizontal, Trash2, Upload } from 'lucide-react'
+import type { DotStyle, ErrorCorrection, LogoShape, QRStyle } from '../types/qr'
 import { DOWNLOAD_SIZES } from '../types/qr'
 import { ColorField, Field, Segmented, Select, Slider, Switch } from './ui'
 import { cn } from '../lib/cn'
+import { PRESETS, applyPreset, type QRPreset } from '../features/presets/presets'
+import {
+  LOGO_ACCEPT,
+  clampLogoSize,
+  isLogoRisky,
+  processLogoFile,
+} from '../features/logo/processLogo'
+import { useToast } from './Toast'
 
 interface QRCustomizerProps {
   style: QRStyle
@@ -20,6 +28,26 @@ const EC_LABELS: Record<ErrorCorrection, string> = {
 export default function QRCustomizer({ style, update }: QRCustomizerProps) {
   const [open, setOpen] = useState(false)
   const iconActive = style.iconEnabled
+  const logo = style.logo
+  const { toast } = useToast()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const apply = (preset: QRPreset) => {
+    update(applyPreset(style, preset))
+    toast(`Preset “${preset.label}” applied`)
+  }
+
+  const handleLogoFile = async (file: File | undefined) => {
+    if (!file) return
+    const result = await processLogoFile(file)
+    if (result.ok) {
+      update({ logo: result.logo, iconEnabled: false })
+      toast('Logo added — error correction raised to H')
+    } else {
+      toast(result.error, 'error')
+    }
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   return (
     <section
@@ -42,10 +70,7 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
         <ChevronDown
           size={17}
           aria-hidden
-          className={cn(
-            'text-ink-3 transition-transform duration-200',
-            open && 'rotate-180',
-          )}
+          className={cn('text-ink-3 transition-transform duration-200', open && 'rotate-180')}
         />
       </button>
 
@@ -61,6 +86,35 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
       >
         <div className={cn('overflow-hidden', !open && 'invisible')}>
           <div className="space-y-5 border-t border-stroke px-5 py-5 sm:px-6">
+            <div>
+              <p className="text-[13px] font-medium text-ink">Presets</p>
+              <p className="mt-0.5 text-xs text-ink-3">
+                Safe starting combinations — scannability first.
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {PRESETS.map((preset) => {
+                  const active = isPresetActive(style, preset)
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      title={preset.description}
+                      onClick={() => apply(preset)}
+                      aria-pressed={active}
+                      className={cn(
+                        'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30',
+                        active
+                          ? 'border-accent bg-accent-soft text-accent'
+                          : 'border-stroke bg-surface-2 text-ink-2 hover:border-stroke-strong hover:text-ink',
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <ColorField
                 id="customize-foreground"
@@ -102,18 +156,16 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
                 id="customize-ec"
                 label="Error correction"
                 hint={
-                  iconActive
-                    ? 'Automatic — a center icon needs maximum recovery.'
+                  iconActive || logo
+                    ? 'Automatic — a center icon or logo needs maximum recovery.'
                     : 'Higher levels survive more damage.'
                 }
               >
                 <Select
                   id="customize-ec"
                   value={style.errorCorrection}
-                  disabled={iconActive}
-                  onChange={(e) =>
-                    update({ errorCorrection: e.target.value as ErrorCorrection })
-                  }
+                  disabled={iconActive || !!logo}
+                  onChange={(e) => update({ errorCorrection: e.target.value as ErrorCorrection })}
                 >
                   {(Object.keys(EC_LABELS) as ErrorCorrection[]).map((level) => (
                     <option key={level} value={level}>
@@ -164,9 +216,105 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
                 disabled={!iconActive}
               />
             </div>
+
+            <div className="space-y-4 border-t border-stroke pt-5">
+              <div>
+                <p className="text-[13px] font-medium text-ink">Custom logo</p>
+                <p className="mt-0.5 text-xs text-ink-3">
+                  PNG or JPG only, processed on your device. A logo automatically raises error
+                  correction to maximum.
+                </p>
+              </div>
+              {!logo ? (
+                <label
+                  className="flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-stroke-strong bg-surface-2 px-4 py-4 text-center transition-colors hover:border-accent hover:bg-accent-soft/50 focus-within:ring-2 focus-within:ring-accent/30"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink-2">
+                    <Upload size={15} aria-hidden />
+                  </span>
+                  <span className="text-[13px] font-medium text-ink">Upload a logo</span>
+                  <span className="text-xs text-ink-3">PNG or JPG · up to 35% of the code</span>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={LOGO_ACCEPT}
+                    aria-label="Upload logo image"
+                    className="sr-only"
+                    onChange={(e) => handleLogoFile(e.target.files?.[0])}
+                  />
+                </label>
+              ) : (
+                <div className="space-y-4 rounded-lg border border-stroke bg-surface-2 p-3.5">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-surface shadow-sm">
+                      {logo.dataUrl ? (
+                        <img src={logo.dataUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <ImageIcon size={18} className="text-ink-3" aria-hidden />
+                      )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-medium text-ink">Your logo</p>
+                      <p className="text-xs text-ink-3">Center overlay</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        update({ logo: null, iconEnabled: true })
+                        toast('Logo removed')
+                      }}
+                      className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-stroke bg-surface px-3 text-xs font-medium text-ink-2 transition-colors hover:border-danger/50 hover:text-danger"
+                    >
+                      <Trash2 size={14} aria-hidden />
+                      Remove
+                    </button>
+                  </div>
+                  <Slider
+                    id="customize-logo-size"
+                    label="Logo size"
+                    value={logo.size}
+                    min={10}
+                    max={35}
+                    onChange={(logoSize) => update({ logo: { ...logo, size: clampLogoSize(logoSize) } })}
+                    format={(v) => `${v}%`}
+                  />
+                  <Segmented<LogoShape>
+                    ariaLabel="Logo container shape"
+                    value={logo.shape}
+                    onChange={(shape) => update({ logo: { ...logo, shape } })}
+                    options={[
+                      { value: 'rounded', label: 'Rounded', title: 'Soft rounded container' },
+                      { value: 'circle', label: 'Circle', title: 'Circular container' },
+                    ]}
+                  />
+                  {isLogoRisky(logo.size) && (
+                    <p className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                      <Bell size={13} aria-hidden />
+                      Large logos can make scanning harder. Keep it under 30% when possible.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
     </section>
   )
+}
+
+function isPresetActive(style: QRStyle, preset: QRPreset): boolean {
+  const active = preset.style
+  if (active.style !== undefined && active.style !== style.style) return false
+  if (active.iconEnabled !== undefined && active.iconEnabled !== style.iconEnabled) return false
+  if (active.margin !== undefined && active.margin !== style.margin) return false
+  if (active.errorCorrection !== undefined) {
+    const current = iconForced(style) ? 'H' : style.errorCorrection
+    if (active.errorCorrection !== current) return false
+  }
+  return true
+}
+
+function iconForced(style: QRStyle): boolean {
+  return style.iconEnabled || !!style.logo
 }

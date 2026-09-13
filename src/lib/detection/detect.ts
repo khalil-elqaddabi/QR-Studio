@@ -1,4 +1,4 @@
-import type { QRContent, QRType } from '../types/qr'
+import type { QRContent, QRType } from '../../types/qr'
 
 export interface DetectionResult {
   type: QRType
@@ -23,14 +23,34 @@ export function parseTelContent(raw: string): string {
   return raw.replace(/^tel:/i, '').split('?')[0]
 }
 
+function splitEscaped(input: string, delimiter: string): string[] {
+  const parts: string[] = []
+  let current = ''
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i]
+    if (ch === '\\' && i + 1 < input.length) {
+      current += ch + input[i + 1]
+      i++
+      continue
+    }
+    if (ch === delimiter) {
+      parts.push(current)
+      current = ''
+      continue
+    }
+    current += ch
+  }
+  parts.push(current)
+  return parts
+}
+
 export function parseWifiContent(raw: string): Partial<QRContent> {
   const content: Partial<QRContent> = {
     security: 'WPA',
     hidden: false,
   }
   const body = raw.replace(/^wifi:/i, '')
-  const tokens = body.split(';')
-  for (const token of tokens) {
+  for (const token of splitEscaped(body, ';')) {
     const index = token.indexOf(':')
     if (index === -1) continue
     const key = token.slice(0, index)
@@ -97,7 +117,7 @@ function parseWhatsAppUrl(raw: string, host: string): DetectionResult {
     }
     message = url.searchParams.get('text') ?? ''
   } catch {
-    /* ignore */
+    /* ignore malformed input */
   }
   return {
     type: 'whatsapp',
@@ -110,12 +130,33 @@ function parseWhatsAppUrl(raw: string, host: string): DetectionResult {
   }
 }
 
-function parseMailto(raw: string): DetectionResult {
-  return { type: 'email', label: 'Email', content: parseMailtoContent(raw) }
+export function parseVCard(raw: string): Partial<QRContent> {
+  const content: Partial<QRContent> = {}
+  const lines = raw.split(/\r?\n/)
+  for (const line of lines) {
+    const match = /^(FN|ORG|TEL|EMAIL|URL):(.+)$/.exec(line.trim())
+    if (!match) continue
+    const [, key, value] = match
+    switch (key) {
+      case 'FN': {
+        const parts = value.split(' ')
+        content.firstName = parts.shift() ?? ''
+        content.lastName = parts.join(' ')
+        break
+      }
+      case 'ORG': content.organization = value; break
+      case 'TEL': content.contactPhone = value; break
+      case 'EMAIL': content.contactEmail = value; break
+      case 'URL': content.website = value; break
+    }
+  }
+  return content
 }
 
-function parseWifi(raw: string): DetectionResult {
-  return { type: 'wifi', label: 'Wi-Fi', content: parseWifiContent(raw) }
+export function parseSms(raw: string): Partial<QRContent> {
+  const match = /^SMSTO:([^:]+):?(.*)$/.exec(raw.trim())
+  if (!match) return {}
+  return { phone: match[1], smsMessage: match[2] ?? '' }
 }
 
 /**
@@ -126,7 +167,9 @@ export function detect(raw: string): DetectionResult | null {
   const trimmed = raw.trim()
   if (!trimmed) return null
 
-  if (/^mailto:/i.test(trimmed)) return parseMailto(trimmed)
+  if (/^mailto:/i.test(trimmed)) {
+    return { type: 'email', label: 'Email', content: parseMailtoContent(trimmed) }
+  }
   if (/^tel:/i.test(trimmed)) {
     return {
       type: 'phone',
@@ -134,8 +177,18 @@ export function detect(raw: string): DetectionResult | null {
       content: { phone: parseTelContent(trimmed) },
     }
   }
-  if (/^wifi:/i.test(trimmed)) return parseWifi(trimmed)
-  if (/^whatsapp:/i.test(trimmed)) return parseWhatsAppUrl(trimmed, 'whatsapp.com')
+  if (/^wifi:/i.test(trimmed)) {
+    return { type: 'wifi', label: 'Wi-Fi', content: parseWifiContent(trimmed) }
+  }
+  if (/^whatsapp:/i.test(trimmed)) {
+    return parseWhatsAppUrl(trimmed, 'whatsapp.com')
+  }
+  if (/^SMSTO:/i.test(trimmed)) {
+    return { type: 'sms', label: 'SMS', content: parseSms(trimmed) }
+  }
+  if (/^BEGIN:VCARD/i.test(trimmed)) {
+    return { type: 'contact', label: 'Contact card', content: parseVCard(trimmed) }
+  }
 
   if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)) {
     try {

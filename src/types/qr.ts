@@ -20,6 +20,16 @@ export type WifiSecurity = 'WPA' | 'WPA2' | 'WEP' | 'nopass'
 
 export type DotStyle = 'classic' | 'rounded' | 'dots'
 
+export type LogoShape = 'rounded' | 'circle'
+
+export interface QRLogo {
+  dataUrl: string
+  size: number
+  shape: LogoShape
+}
+
+export const LOGO_SIZE_RANGE = { min: 10, max: 35, risky: 30 } as const
+
 export const WiFiSecurityLabels: Record<WifiSecurity, string> = {
   WPA: 'WPA / WPA2',
   WPA2: 'WPA2',
@@ -62,6 +72,7 @@ export interface QRStyle {
   iconEnabled: boolean
   iconSize: number
   style: DotStyle
+  logo: QRLogo | null
 }
 
 export const EMPTY_CONTENT: QRContent = {
@@ -101,4 +112,5 @@ export const DEFAULT_STYLE: QRStyle = {
   iconEnabled: true,
   iconSize: 23,
   style: 'rounded',
+  logo: null,
 }

@@ -4,7 +4,8 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { useEffect } from 'react'
+import { ChevronDown, X } from 'lucide-react'
 import { cn } from '../lib/cn'
 
 /* ---------------------------------- Field --------------------------------- */
@@ -270,7 +271,7 @@ export function Segmented<T extends string>({
           title={option.title}
           onClick={() => onChange(option.value)}
           className={cn(
-            'rounded-md px-2 py-1.5 text-[13px] font-medium transition-all duration-150 sm:px-3',
+            'min-h-9 rounded-md px-2 py-1.5 text-[13px] font-medium transition-all duration-150 sm:px-3',
             value === option.value
               ? 'bg-surface text-ink shadow-sm'
               : 'text-ink-2 hover:text-ink',
@@ -279,6 +280,53 @@ export function Segmented<T extends string>({
           {option.label}
         </button>
       ))}
+    </div>
+  )
+}
+
+/* --------------------------------- Dialog --------------------------------- */
+
+interface DialogProps {
+  open: boolean
+  onClose: () => void
+  title: string
+  children: ReactNode
+}
+
+export function Dialog({ open, onClose, title, children }: DialogProps) {
+  useEffect(() => {
+    if (!open) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  if (!open) return null
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-6"
+    >
+      <div className="absolute inset-0 bg-black/45" onClick={onClose} aria-hidden="true" />
+      <div className="animate-fade-up relative max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl border border-stroke bg-surface p-5 shadow-pop sm:p-6">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-ink">{title}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+          >
+            <X size={18} aria-hidden />
+          </button>
+        </div>
+        {children}
+      </div>
     </div>
   )
 }
