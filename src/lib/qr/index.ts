@@ -3,6 +3,7 @@ export type { DownloadFormat } from './naming'
 export { qrFilename, sanitizeFilenamePart } from './naming'
 export {
   buildMatrix,
+  centerIcon,
   effectiveErrorCorrection,
   glyphColorFor,
   renderQRToCanvas,

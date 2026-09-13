@@ -477,7 +477,6 @@ function PresetThumb({ preset }: { preset: QRPreset }) {
 function isPresetActive(style: QRStyle, preset: QRPreset): boolean {
   const active = preset.style
   if (active.style !== undefined && active.style !== style.style) return false
-  if (active.iconEnabled !== undefined && active.iconEnabled !== style.iconEnabled) return false
   if (active.margin !== undefined && active.margin !== style.margin) return false
   if (active.errorCorrection !== undefined) {
     const current = iconForced(style) ? 'H' : style.errorCorrection

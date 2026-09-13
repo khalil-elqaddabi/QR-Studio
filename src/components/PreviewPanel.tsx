@@ -11,10 +11,11 @@ import {
   downloadPNG,
   downloadSVG,
 } from '../lib/download'
-import { effectiveErrorCorrection, qrFilename, renderQRToCanvas, renderQRToSVG } from '../lib/qr'
+import { effectiveErrorCorrection, centerIcon, qrFilename, renderQRToCanvas, renderQRToSVG } from '../lib/qr'
 import type { QRRenderOptions } from '../lib/qr'
 import type { DownloadFormat } from '../lib/qr'
-import { shareQRFile } from '../lib/sharing/share'
+import { shareQRFile, isImageCopyAvailable, isShareAvailable } from '../lib/sharing/share'
+import { Dialog } from './ui'
 import { titleFor } from '../lib/title'
 import type { ValidationStatus } from '../features/validate/messages'
 import { validationMessage } from '../features/validate/messages'
@@ -86,6 +87,7 @@ export default function PreviewPanel({
   const { toast } = useToast()
   const [renderError, setRenderError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
   const [validation, setValidation] = useState<ValidationStatus>('idle')
 
   const effectiveErrorCorrectionLevel = effectiveErrorCorrection(style.errorCorrection, style.iconEnabled, style.logo)
@@ -98,7 +100,7 @@ export default function PreviewPanel({
     errorCorrection: effectiveErrorCorrectionLevel,
     margin: style.margin,
     style: style.style,
-    iconType: style.logo ? null : style.iconEnabled ? type : null,
+    iconType: centerIcon(style, type),
     iconRatio: style.iconSize / 100,
     logo: style.logo ?? null,
     size,
@@ -161,6 +163,7 @@ export default function PreviewPanel({
     svg: qrFilename(type, { title, format: 'svg' }),
   }
   const validationBadge = validationMessage(validation)
+  const imageCopyAvailable = isImageCopyAvailable()
 
   const makeCanvas = async () => renderQRToCanvas(buildOptions(style.size))
 
@@ -214,33 +217,30 @@ export default function PreviewPanel({
 
   const handleShare = async () => {
     if (!payload || hasErrors) return
+    if (!isShareAvailable()) {
+      setShareOpen(true)
+      return
+    }
     setBusy(true)
     try {
       const canvas = await makeCanvas()
       const result = await shareQRFile(canvas, payload, filenames.png)
-      if (result === 'unsupported') {
-        const copied = await copyText(payload)
-        toast(
-          copied
-            ? 'Sharing isn’t supported here — copied the content instead'
-            : 'Sharing isn’t supported in this browser',
-          'info',
-        )
-      } else if (result === 'failed') {
-        toast('Something went wrong while sharing', 'error')
-      }
+      if (result === 'cancelled' || result === 'shared') return
+      toast('Native sharing isn’t available here — use the options below.', 'info')
+      setShareOpen(true)
     } catch {
-      toast('Something went wrong while sharing', 'error')
+      toast('Could not prepare the QR code for sharing', 'error')
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <section
-      aria-label="QR preview and download"
-      className="min-w-0 overflow-hidden rounded-xl border border-stroke bg-surface shadow-card"
-    >
+    <>
+      <section
+        aria-label="QR preview and download"
+        className="min-w-0 overflow-hidden rounded-xl border border-stroke bg-surface shadow-card"
+      >
       <div className="p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">
@@ -372,6 +372,53 @@ export default function PreviewPanel({
         </p>
       </div>
     </section>
+
+    <Dialog open={shareOpen} onClose={() => setShareOpen(false)} title="Share QR">
+      <div className="space-y-2.5">
+        <p className="pb-1 text-[13px] leading-relaxed text-ink-2">
+          Native sharing isn’t supported in this browser. Choose how you’d like to share this QR code.
+        </p>
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          disabled={!ready}
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-ink px-4 text-sm font-semibold text-page shadow-sm transition-all duration-150 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/40 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.99]"
+        >
+          <Copy size={16} aria-hidden />
+          Copy content
+        </button>
+        <button
+          type="button"
+          onClick={() => handleDownload('png')}
+          disabled={!ready || busy}
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-all duration-150 hover:border-stroke-strong hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.99]"
+        >
+          <Download size={16} aria-hidden />
+          Download PNG
+        </button>
+        <button
+          type="button"
+          onClick={() => handleDownload('svg')}
+          disabled={!ready || busy}
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-all duration-150 hover:border-stroke-strong hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.99]"
+        >
+          <Download size={16} aria-hidden />
+          Download SVG
+        </button>
+        {imageCopyAvailable && (
+          <button
+            type="button"
+            onClick={handleCopyImage}
+            disabled={!ready || busy}
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-all duration-150 hover:border-stroke-strong hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.99]"
+          >
+            <Copy size={16} aria-hidden />
+            Copy image
+          </button>
+        )}
+      </div>
+    </Dialog>
+    </>
   )
 }
 

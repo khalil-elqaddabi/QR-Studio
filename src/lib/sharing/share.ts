@@ -10,6 +10,10 @@ export function isFileShareAvailable(): boolean {
   return typeof navigator.canShare === 'function'
 }
 
+export function isImageCopyAvailable(): boolean {
+  return typeof ClipboardItem !== 'undefined' && !!navigator.clipboard && !!navigator.clipboard.write
+}
+
 export async function shareQRFile(
   canvas: HTMLCanvasElement,
   text: string,

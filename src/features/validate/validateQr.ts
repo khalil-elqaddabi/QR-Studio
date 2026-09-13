@@ -1,4 +1,4 @@
-import { effectiveErrorCorrection, renderQRToCanvas } from '../../lib/qr'
+import { effectiveErrorCorrection, centerIcon, renderQRToCanvas } from '../../lib/qr'
 import type { QRType, QRStyle } from '../../types/qr'
 import { decodeCanvas } from '../scan/decode'
 import type { ValidationStatus } from './messages'
@@ -28,7 +28,7 @@ export async function validateQr(input: ValidationInput): Promise<ValidationStat
       ),
       margin: input.style.margin,
       style: input.style.style,
-      iconType: input.style.logo ? null : input.style.iconEnabled ? (input.type as QRType) : null,
+      iconType: centerIcon(input.style, input.type),
       iconRatio: input.style.iconSize / 100,
       logo: input.style.logo ?? null,
       size: 560,

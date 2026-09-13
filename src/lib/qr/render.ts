@@ -68,7 +68,7 @@ export function glyphColorFor(foreground: string): string {
 }
 
 /**
- * A center icon or custom logo masks part of the data area, so the highest
+ * The center icon or custom logo masks part of the data area, so the highest
  * error correction level is required to keep the code readable.
  */
 export function effectiveErrorCorrection(
@@ -77,6 +77,17 @@ export function effectiveErrorCorrection(
   logo: QRLogo | null,
 ): ErrorCorrection {
   return iconEnabled || logo ? 'H' : errorCorrection
+}
+
+/**
+ * Derives the automatic center icon independently of module style.
+ * A custom logo always wins over the automatic type icon.
+ */
+export function centerIcon(
+  style: { iconEnabled: boolean; logo: QRLogo | null },
+  type: QRType | null,
+): QRType | null {
+  return style.logo ? null : style.iconEnabled ? type : null
 }
 
 export interface QRRenderOptions {

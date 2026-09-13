@@ -8,9 +8,9 @@ export interface QRPreset {
 }
 
 /**
- * Safe combinations only: icon-including presets keep the icon small and rely
- * on 'H' error correction, margins never pinch the quiet zone, and module
- * styles stay within the readable range we have verified with ZXing.
+ * Safe visual-only presets: module shape, colors, margins and error correction.
+ * Presets never touch `iconEnabled`, `logo`, or `iconType` — those are
+ * independent composition concerns managed outside of visual presets.
  */
 export const PRESETS: QRPreset[] = [
   {
@@ -23,34 +23,31 @@ export const PRESETS: QRPreset[] = [
       background: '#ffffff',
       margin: 2,
       errorCorrection: 'M',
-      iconEnabled: false,
     },
   },
   {
     id: 'rounded',
     label: 'Rounded',
-    description: 'Soft corners with a small center icon',
+    description: 'Soft round modules with a compact icon slot',
     style: {
       style: 'rounded',
       foreground: '#1c1917',
       background: '#ffffff',
       margin: 2,
       errorCorrection: 'H',
-      iconEnabled: true,
       iconSize: 20,
     },
   },
   {
     id: 'dots',
     label: 'Dots',
-    description: 'Round dot modules, no icon',
+    description: 'Round dot modules',
     style: {
       style: 'dots',
       foreground: '#1c1917',
       background: '#ffffff',
       margin: 2,
       errorCorrection: 'Q',
-      iconEnabled: false,
     },
   },
   {
@@ -63,20 +60,18 @@ export const PRESETS: QRPreset[] = [
       background: '#ffffff',
       margin: 4,
       errorCorrection: 'M',
-      iconEnabled: false,
     },
   },
   {
     id: 'corporate',
     label: 'Corporate',
-    description: 'Navy on white with a small icon',
+    description: 'Navy on white with a tight icon slot',
     style: {
       style: 'rounded',
       foreground: '#0f172a',
       background: '#ffffff',
       margin: 4,
       errorCorrection: 'H',
-      iconEnabled: true,
       iconSize: 18,
     },
   },
@@ -90,7 +85,6 @@ export const PRESETS: QRPreset[] = [
       background: '#f5f4f0',
       margin: 2,
       errorCorrection: 'H',
-      iconEnabled: false,
     },
   },
   {
@@ -103,7 +97,6 @@ export const PRESETS: QRPreset[] = [
       background: '#ffffff',
       margin: 2,
       errorCorrection: 'M',
-      iconEnabled: false,
     },
   },
 ]
@@ -114,5 +107,6 @@ export function applyPreset(current: QRStyle, preset: QRPreset): QRStyle {
     ...preset.style,
     size: current.size,
     logo: current.logo,
+    iconEnabled: current.iconEnabled,
   }
 }

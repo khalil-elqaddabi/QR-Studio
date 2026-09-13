@@ -5,7 +5,7 @@ import { TYPE_LABEL } from '../lib/meta'
 import { type QRType } from '../types/qr'
 import { TypeIcon } from './TypeSelector'
 import { cn } from '../lib/cn'
-import { effectiveErrorCorrection, qrFilename, renderQRToCanvas } from '../lib/qr'
+import { effectiveErrorCorrection, centerIcon, qrFilename, renderQRToCanvas } from '../lib/qr'
 import { downloadPNG } from '../lib/download'
 import { useToast } from './Toast'
 
@@ -68,7 +68,7 @@ export default function HistoryPanel({
         ),
         margin: item.style.margin,
         style: item.style.style,
-        iconType: item.style.logo ? null : item.style.iconEnabled ? type : null,
+        iconType: centerIcon(item.style, type),
         iconRatio: item.style.iconSize / 100,
         logo: item.style.logo ?? null,
         size: item.style.size,
