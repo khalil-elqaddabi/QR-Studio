@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Check,
   ClipboardCopy,
@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react'
 import { useCameraScanner, type CameraStatus } from '../features/scan/useCameraScanner'
+import { cameraStatusMessage } from '../features/scan/camera'
 import { classifyScan, type ScanAction } from '../features/scan/actions'
 import { copyText } from '../lib/download'
 import { openExternalUrl } from '../lib/safeUrl'
@@ -30,11 +31,15 @@ export default function ScannerPanel({ onUsePayload, onClose }: ScannerPanelProp
   const [result, setResult] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [dragOver, setDragOver] = useState(false)
-  const { videoRef, status, start } = useCameraScanner((text) => setResult(text))
+  const { videoRef, status, start, stop, secure } = useCameraScanner((text) => setResult(text))
 
   const classified = result ? classifyScan(result) : null
 
   const clearResult = () => setResult(null)
+
+  useEffect(() => {
+    if (result) stop()
+  }, [result, stop])
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return
@@ -171,7 +176,7 @@ export default function ScannerPanel({ onUsePayload, onClose }: ScannerPanelProp
           </div>
         ) : (
           <div className="space-y-5">
-            <CameraView videoRef={videoRef} status={status} onStart={start} />
+            <CameraView videoRef={videoRef} status={status} secure={secure} onStart={start} />
             <div className="flex items-center gap-3" aria-hidden="true">
               <span className="h-px flex-1 bg-stroke" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3">
@@ -227,34 +232,45 @@ export default function ScannerPanel({ onUsePayload, onClose }: ScannerPanelProp
 function CameraView({
   videoRef,
   status,
+  secure,
   onStart,
 }: {
   videoRef: React.RefObject<HTMLVideoElement | null>
   status: CameraStatus
+  secure: boolean
   onStart: () => void
 }) {
   return (
     <div className="space-y-3">
       <div className="bg-surface-2 relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-stroke shadow-card sm:mx-auto sm:max-w-sm">
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          autoPlay
+          className={cn(
+            'h-full w-full object-cover transition-opacity duration-300',
+            status === 'active' ? 'opacity-100' : 'opacity-0',
+          )}
+        />
         {status === 'active' ? (
-          <>
-            <video ref={videoRef} playsInline muted className="h-full w-full object-cover" />
-            <div className="pointer-events-none absolute inset-0 grid place-items-center">
-              <span className="relative block h-48 w-48 shadow-[0_0_0_9999px_rgba(33,27,21,0.35)]">
-                <span className="absolute inset-0 rounded-xl border-2 border-white/70" />
-                <span className="absolute -left-0.5 -top-0.5 h-6 w-6 rounded-tl-md border-l-4 border-t-4 border-white" />
-                <span className="absolute -right-0.5 -top-0.5 h-6 w-6 rounded-tr-md border-r-4 border-t-4 border-white" />
-                <span className="absolute -bottom-0.5 -left-0.5 h-6 w-6 rounded-bl-md border-b-4 border-l-4 border-white" />
-                <span className="absolute -bottom-0.5 -right-0.5 h-6 w-6 rounded-br-md border-b-4 border-r-4 border-white" />
-              </span>
-            </div>
-          </>
+          <div className="pointer-events-none absolute inset-0 grid place-items-center">
+            <span className="relative block h-48 w-48 shadow-[0_0_0_9999px_rgba(33,27,21,0.35)]">
+              <span className="absolute inset-0 rounded-xl border-2 border-white/70" />
+              <span className="absolute -left-0.5 -top-0.5 h-6 w-6 rounded-tl-md border-l-4 border-t-4 border-white" />
+              <span className="absolute -right-0.5 -top-0.5 h-6 w-6 rounded-tr-md border-r-4 border-t-4 border-white" />
+              <span className="absolute -bottom-0.5 -left-0.5 h-6 w-6 rounded-bl-md border-b-4 border-l-4 border-white" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-6 w-6 rounded-br-md border-b-4 border-r-4 border-white" />
+            </span>
+          </div>
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center">
+          <div className="absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center">
             <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface text-ink-2 ring-1 ring-stroke">
               <ScanLine size={20} strokeWidth={1.75} aria-hidden />
             </span>
-            <p className="max-w-[200px] text-[13px] text-ink-3">{statusMessage(status)}</p>
+            <p className="max-w-[200px] text-[13px] text-ink-3">
+              {cameraStatusMessage(status, secure)}
+            </p>
             {(status === 'idle' || status === 'denied' || status === 'error' || status === 'unsupported') && (
               <button
                 type="button"
@@ -281,17 +297,4 @@ function CameraView({
       )}
     </div>
   )
-}
-
-function statusMessage(status: CameraStatus): string {
-  switch (status) {
-    case 'denied':
-      return 'Camera permission was denied.'
-    case 'unsupported':
-      return 'Camera isn’t available in this browser.'
-    case 'error':
-      return 'Could not access the camera.'
-    default:
-      return 'Use your camera to scan any QR code instantly.'
-  }
 }
