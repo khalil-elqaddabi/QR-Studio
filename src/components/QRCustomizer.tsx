@@ -122,7 +122,7 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
               hint="Safe starting combinations"
               id={SECTION_ID.presets}
             >
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                 {PRESETS.map((preset) => {
                   const active = isPresetActive(style, preset)
                   return (
@@ -447,7 +447,7 @@ function PresetThumb({ preset }: { preset: QRPreset }) {
   return (
     <svg
       viewBox="0 0 32 32"
-      className="block h-11 w-11"
+      className="block h-10 w-10 sm:h-11 sm:w-11"
       role="img"
       aria-label={`${preset.label} preset preview`}
     >

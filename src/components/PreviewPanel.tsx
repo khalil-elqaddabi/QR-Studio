@@ -238,7 +238,7 @@ export default function PreviewPanel({
     <>
       <section
         aria-label="QR preview and download"
-        className="min-w-0 rounded-2xl border border-stroke bg-surface p-6 shadow-pop"
+        className="min-w-0 rounded-2xl border border-stroke bg-surface p-5 shadow-pop sm:p-6"
       >
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-base font-semibold text-ink">Preview</h2>
@@ -316,15 +316,17 @@ export default function PreviewPanel({
         )}
 
         <div className="flex items-center gap-2">
-          <div className="grid flex-1 grid-cols-2 gap-2">
+          <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
             <DownloadButton
-              label={`PNG · ${style.size}px`}
+              label="PNG"
+              meta={`· ${style.size}px`}
               emphasized={defaultFormat === 'png'}
               disabled={!ready || busy}
               onClick={() => handleDownload('png')}
             />
             <DownloadButton
               label="SVG"
+              meta="· vector"
               emphasized={defaultFormat === 'svg'}
               disabled={!ready || busy}
               onClick={() => handleDownload('svg')}
@@ -411,11 +413,13 @@ className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl 
 
 function DownloadButton({
   label,
+  meta,
   emphasized,
   disabled,
   onClick,
 }: {
   label: string
+  meta?: string
   emphasized: boolean
   disabled: boolean
   onClick: () => void
@@ -426,14 +430,17 @@ function DownloadButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-[13px] font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-40',
+        'inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-xl px-3 text-[13px] font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-40',
         emphasized
           ? 'bg-accent text-accent-ink shadow-card hover:bg-accent-hover'
           : 'border border-stroke bg-surface text-ink hover:bg-surface-2',
       )}
     >
       <Download size={15} aria-hidden />
-      {label}
+      <span className="min-w-0 truncate">
+        {label}
+        {meta && <span className="hidden lg:inline"> {meta}</span>}
+      </span>
     </button>
   )
 }

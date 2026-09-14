@@ -250,7 +250,7 @@ function ActionBtn({
       title={title}
       onClick={onClick}
       className={cn(
-        'inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent',
+        'inline-flex h-9 w-9 items-center justify-center rounded-lg transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent',
         danger
           ? 'text-ink-3 hover:bg-danger/10 hover:text-danger'
           : 'text-ink-3 hover:bg-surface-2 hover:text-ink',

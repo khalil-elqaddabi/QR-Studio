@@ -83,7 +83,7 @@ export default function Header({
   )
 
   const mobileNav = (
-    <nav aria-label="App mode" className="pb-safe grid grid-cols-3">
+    <nav aria-label="App mode" className="grid grid-cols-3 gap-1">
       {NAV_ITEMS.map((item) => {
         const active = isActive(item.key)
         return (
@@ -93,18 +93,12 @@ export default function Header({
             aria-pressed={active}
             onClick={getAction(item.key)}
             className={cn(
-              'relative flex h-full min-h-[3.5rem] flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40',
-              active ? 'text-accent' : 'text-ink-3',
+              'relative flex h-[3.75rem] flex-col items-center justify-center gap-1 rounded-2xl text-[10.5px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40',
+              active ? 'bg-accent-soft/80 text-accent' : 'text-ink-3 hover:text-ink-2',
             )}
           >
             {item.icon}
             {item.label}
-            {active && (
-              <span
-                aria-hidden="true"
-                className="absolute inset-x-4 -bottom-px h-[2px] rounded-full bg-accent"
-              />
-            )}
           </button>
         )
       })}
@@ -114,7 +108,7 @@ export default function Header({
   return (
     <>
       <header className="pt-safe sticky top-0 z-30 border-b border-stroke bg-surface/80 backdrop-blur-md">
-        <div className="mx-auto flex h-[4.5rem] max-w-[1400px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-4 px-4 sm:h-[4.5rem] sm:px-6 lg:px-8">
           {/* Left — logo + app name */}
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink text-page">
@@ -171,8 +165,8 @@ export default function Header({
         </div>
       </header>
 
-      <div className="px-safe fixed inset-x-0 bottom-3 z-40 lg:hidden">
-        <div className="mx-auto flex max-w-xs items-center rounded-2xl border border-stroke bg-surface/95 backdrop-blur-md px-1 py-1 shadow-pop">
+      <div className="fixed inset-x-3 bottom-3 z-40 lg:hidden">
+        <div className="rounded-2xl border border-stroke bg-surface/95 px-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-1.5 shadow-pop backdrop-blur-md">
           {mobileNav}
         </div>
       </div>

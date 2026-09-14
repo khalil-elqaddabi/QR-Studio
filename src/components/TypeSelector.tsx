@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { ICON_MAP } from '../lib/icons'
 import { TYPE_LABEL } from '../lib/meta'
 import type { QRType } from '../types/qr'
@@ -53,6 +54,22 @@ const GROUPS: Array<{ id: string; label: string; types: QRType[] }> = [
 ]
 
 export default function TypeSelector({ value, onChange }: TypeSelectorProps) {
+  const skipFirstScroll = useRef(true)
+
+  // When the type changes (chip tap, scanned code, history item, reset…), keep
+  // the active chip in view on the mobile rails.
+  useEffect(() => {
+    if (skipFirstScroll.current) {
+      skipFirstScroll.current = false
+      return
+    }
+    const el = document.querySelector<HTMLElement>(`[data-type-chip="${value}"]`)
+    // The mobile rails are display:none on desktop, so offsetParent is null there.
+    if (el && el.offsetParent !== null) {
+      el.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
+    }
+  }, [value])
+
   return (
     <section aria-labelledby="type-heading" className="min-w-0">
       <div className="mb-2 flex items-baseline justify-between gap-3 pr-1 lg:px-1">
@@ -65,18 +82,60 @@ export default function TypeSelector({ value, onChange }: TypeSelectorProps) {
         <span className="hidden text-xs text-ink-3 lg:inline">1 of the following</span>
       </div>
 
-      {/* Mobile: horizontal scroll · Desktop: tight vertical list */}
-      <div
-        role="radiogroup"
-        aria-label="QR type"
-        className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 lg:mx-0 lg:block lg:space-y-3 lg:overflow-visible lg:px-0 lg:pb-0"
-      >
+      {/* Mobile/tablet: grouped horizontal rails */}
+      <div className="space-y-2 lg:hidden">
         {GROUPS.map((group) => (
-          <div key={group.id} className="flex shrink-0 items-center gap-1.5 lg:block">
-            <p className="sr-only lg:not-sr-only lg:mb-1 lg:flex lg:px-2 lg:text-[11px] lg:font-semibold lg:uppercase lg:tracking-[0.12em] lg:text-ink-3">
+          <div key={group.id}>
+            <p className="mb-1.5 px-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-3">
               {group.label}
             </p>
-            <div className="flex shrink-0 gap-1.5 lg:block lg:space-y-0.5">
+            <div
+              role="radiogroup"
+              aria-label={`QR type — ${group.label}`}
+              className="no-scrollbar -mx-1.5 flex gap-1.5 overflow-x-auto px-1.5 pb-1"
+            >
+              {group.types.map((type) => {
+                const active = value === type
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    data-type-chip={type}
+                    onClick={() => onChange(type)}
+                    className={cn(
+                      'relative flex shrink-0 items-center gap-2 rounded-full border py-2 pl-1.5 pr-3.5 text-[13px] font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40',
+                      active
+                        ? 'border-accent bg-accent-soft text-ink font-semibold'
+                        : 'border-stroke bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors',
+                        active ? 'bg-accent text-accent-ink' : 'bg-surface-2 text-ink-3',
+                      )}
+                    >
+                      <TypeIcon type={type} size={15} />
+                    </span>
+                    <span className="whitespace-nowrap">{TYPE_LABEL[type]}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: tight vertical list */}
+      <div role="radiogroup" aria-label="QR type" className="hidden lg:block">
+        {GROUPS.map((group) => (
+          <div key={group.id} className="mb-3 last:mb-0">
+            <p className="mb-1 flex px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">
+              {group.label}
+            </p>
+            <div className="space-y-0.5">
               {group.types.map((type) => {
                 const active = value === type
                 return (
@@ -87,25 +146,22 @@ export default function TypeSelector({ value, onChange }: TypeSelectorProps) {
                     aria-checked={active}
                     onClick={() => onChange(type)}
                     className={cn(
-                      'relative flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-left text-[13px] font-medium transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent',
-                      'lg:w-full lg:border-transparent lg:px-3 lg:py-2.5 lg:focus-visible:ring-2',
+                      'relative flex w-full items-center gap-2 rounded-xl border border-transparent px-3 py-2.5 text-left text-[13px] font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent',
                       active
-                        ? 'border-accent bg-accent-soft text-ink font-semibold shadow-card'
-                        : 'border-stroke bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink lg:border-transparent lg:bg-transparent lg:hover:bg-surface-2',
+                        ? 'bg-accent-soft text-ink font-semibold shadow-card'
+                        : 'text-ink-2 hover:bg-surface-2 hover:text-ink',
                     )}
                   >
                     {active && (
                       <span
                         aria-hidden="true"
-                        className="absolute inset-y-1.5 left-0 hidden w-[3px] rounded-full bg-accent lg:block"
+                        className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-accent"
                       />
                     )}
                     <span
                       className={cn(
                         'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                        active
-                          ? 'bg-accent text-accent-ink'
-                          : 'bg-surface-2 text-ink-3 lg:bg-transparent',
+                        active ? 'bg-accent text-accent-ink' : 'bg-transparent text-ink-3',
                       )}
                     >
                       <TypeIcon type={type} size={15} />

@@ -216,6 +216,10 @@ html {
   scroll-behavior: smooth;
 }
 
+html {
+  overflow-x: clip;
+}
+
 body {
   background-color: var(--c-page);
   color: var(--c-ink);
@@ -224,6 +228,7 @@ body {
   text-rendering: optimizeLegibility;
   word-break: normal;
   overflow-wrap: normal;
+  overflow-x: clip;
 }
 
 p {
@@ -345,6 +350,24 @@ textarea:-webkit-autofill {
 
   .app-shell-main {
     grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+    grid-template-areas:
+      "intro preview"
+      "form preview"
+      "custom preview"
+      "history preview";
+    gap: 1.5rem;
+  }
+
+  .app-shell-preview {
+    position: sticky;
+    top: calc(4.5rem + 1.25rem);
+  }
+}
+
+/* Tablet portrait (768–1023px): form + sticky preview side by side */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app-shell-main {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
     grid-template-areas:
       "intro preview"
       "form preview"

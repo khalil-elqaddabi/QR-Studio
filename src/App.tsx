@@ -200,7 +200,7 @@ function AppWorkspace({
   const meta = TYPE_META[type]
 
   return (
-    <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pt-8 lg:px-8 lg:pb-12">
+    <div className="mx-auto w-full max-w-[1400px] flex-1 px-3.5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-5 sm:px-6 sm:pt-8 lg:px-8 lg:pb-12">
       <div className="app-shell">
         <aside className="app-shell-sidebar" aria-label="QR type sidebar">
           <TypeSelector value={type} onChange={setType} />
@@ -220,10 +220,10 @@ function AppWorkspace({
             <span className="inline-flex items-center rounded-full border border-accent/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">
               QR code generator
             </span>
-            <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
+            <h1 className="mt-3 text-[26px] font-bold leading-tight tracking-tight text-ink sm:text-4xl">
               Create a QR code
             </h1>
-            <p className="mt-2 max-w-xl text-base leading-relaxed text-ink-2">
+            <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-2 sm:text-base">
               Pick a type, drop in your content, and download a crisp, scannable code — all on
               this device.
             </p>
@@ -404,7 +404,7 @@ export default function App() {
         {mode === 'scan' ? (
           <Suspense
             fallback={
-              <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-8 sm:px-6 lg:px-8 lg:pb-12">
+              <div className="mx-auto w-full max-w-[1400px] flex-1 px-3.5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-5 sm:px-6 sm:pt-8 lg:px-8 lg:pb-12">
                 <div
                   role="status"
                   className="flex min-h-80 flex-col items-center justify-center gap-3 rounded-2xl border border-stroke bg-surface shadow-card"
@@ -415,7 +415,7 @@ export default function App() {
               </div>
             }
           >
-            <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pt-8 lg:px-8 lg:pb-12">
+<div className="mx-auto w-full max-w-[1400px] flex-1 px-3.5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-5 sm:px-6 sm:pt-8 lg:px-8 lg:pb-12">
               <ScannerPanel
                 onUsePayload={handleScanResult}
                 onClose={() => setMode('create')}

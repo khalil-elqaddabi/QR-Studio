@@ -148,17 +148,24 @@ export default function ScannerPanel({ onUsePayload, onClose }: ScannerPanelProp
               <button
                 type="button"
                 onClick={handleUse}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                className="inline-flex h-10 min-w-0 items-center justify-center gap-2 rounded-xl bg-accent px-3 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
               >
-                <QrCode size={15} aria-hidden />
-                Create a QR for this
+                <QrCode size={15} className="shrink-0" aria-hidden />
+                <span className="min-w-0 truncate">
+                  <span className="sm:hidden">Use it</span>
+                  <span className="hidden sm:inline">Create a QR for this</span>
+                </span>
               </button>
               <button
                 type="button"
                 onClick={clearResult}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                className="inline-flex h-10 min-w-0 items-center justify-center gap-2 rounded-xl border border-stroke bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-surface-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
               >
-                Scan another
+                <ScanLine size={15} className="shrink-0" aria-hidden />
+                <span className="min-w-0 truncate">
+                  <span className="sm:hidden">Scan again</span>
+                  <span className="hidden sm:inline">Scan another</span>
+                </span>
               </button>
             </div>
           </div>
