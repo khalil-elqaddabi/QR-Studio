@@ -16,6 +16,8 @@ interface HistoryPanelProps {
   onRegenerate: (item: HistoryItem) => void
   onRemove: (id: string) => void
   onClear: () => void
+  open: boolean
+  onToggleOpen: () => void
 }
 
 function relativeTime(timestamp: number): string {
@@ -42,8 +44,9 @@ export default function HistoryPanel({
   onRegenerate,
   onRemove,
   onClear,
+  open,
+  onToggleOpen,
 }: HistoryPanelProps) {
-  const [open, setOpen] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
   const { toast } = useToast()
 
@@ -89,7 +92,7 @@ export default function HistoryPanel({
         type="button"
         aria-expanded={open}
         aria-controls="history-content"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => onToggleOpen()}
         className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:px-6"
       >
         <span className="flex items-center gap-2.5">

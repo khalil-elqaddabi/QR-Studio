@@ -16,7 +16,7 @@ function preferredTheme(): Theme {
 
 function syncThemeColor(theme: Theme) {
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.setAttribute('content', theme === 'dark' ? '#12110f' : '#f6f4f0')
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#0f1428' : '#f4f6fb')
 }
 
 export function useTheme(): { theme: Theme; toggle: () => void } {

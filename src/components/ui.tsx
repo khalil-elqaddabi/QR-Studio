@@ -59,7 +59,7 @@ export function Field({
 /* --------------------------------- Inputs --------------------------------- */
 
 const controlBase =
-  'w-full rounded-[10px] border border-stroke bg-surface px-3 py-2.5 text-[15px] text-ink shadow-[0_1px_0_0_rgb(28_25_23_/_0.02)] placeholder:text-ink-3 transition-[border-color,box-shadow,background-color] duration-150 hover:border-stroke-strong focus:border-accent focus:shadow-[0_0_0_3px_var(--c-accent-soft)] focus:outline-none aria-invalid:border-danger aria-invalid:focus:shadow-[0_0_0_3px_rgb(220_38_38_/_0.12)] disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm dark:shadow-none'
+  'w-full rounded-[10px] border border-stroke bg-surface px-3 py-2.5 text-[15px] text-ink shadow-[0_1px_0_0_rgb(15_21_45_/_0.03)] placeholder:text-ink-3 transition-[border-color,box-shadow,background-color] duration-150 hover:border-stroke-strong focus:border-accent focus:shadow-[0_0_0_3px_var(--c-accent-soft)] focus:outline-none aria-invalid:border-danger aria-invalid:focus:shadow-[0_0_0_3px_rgb(197_54_62_/_0.12)] disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm dark:shadow-none'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   invalid?: boolean
@@ -283,7 +283,7 @@ export function Segmented<T extends string>({
           className={cn(
             'min-h-9 rounded-lg px-2 py-1.5 text-[13px] font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:px-3',
             value === option.value
-              ? 'bg-surface text-ink shadow-[0_1px_2px_rgb(28_25_23_/_0.12)]'
+              ? 'bg-surface text-ink shadow-[0_1px_2px_rgb(15_21_45_/_0.1)]'
               : 'text-ink-2 hover:text-ink',
           )}
         >

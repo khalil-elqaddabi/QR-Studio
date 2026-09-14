@@ -49,9 +49,18 @@ interface AppWorkspaceProps {
   history: ReturnType<typeof useHistory>
   pendingPayload: string | null
   onPendingUsed: () => void
+  historyOpen: boolean
+  onToggleHistory: () => void
 }
 
-function AppWorkspace({ settings, history, pendingPayload, onPendingUsed }: AppWorkspaceProps) {
+function AppWorkspace({
+  settings,
+  history,
+  pendingPayload,
+  onPendingUsed,
+  historyOpen,
+  onToggleHistory,
+}: AppWorkspaceProps) {
   const [type, setType] = useState<QRType>('url')
   const [content, setContent] = useState<QRContent>(EMPTY_CONTENT)
   const [style, setStyle] = useState<QRStyle>(() => ({
@@ -192,32 +201,36 @@ function AppWorkspace({ settings, history, pendingPayload, onPendingUsed }: AppW
 
   return (
     <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pt-8 lg:px-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h1 className="text-[22px] font-semibold tracking-tight text-ink sm:text-[26px]">
-              Create beautiful QR codes in seconds
-            </h1>
-            <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-stroke bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-2 sm:inline-flex">
-              <ShieldCheck size={12} className="text-accent" aria-hidden />
-              100% private
-            </span>
-          </div>
-          <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-2 sm:text-sm">
-            Pick a type, drop in your content, and download a crisp, scannable QR code —
-            all on this device.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-6 flex flex-col gap-6 lg:mt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(360px,400px)] lg:items-start lg:gap-8">
-        <div className="flex min-w-0 flex-col gap-6">
+      <div className="app-layout">
+        <section className="app-area-type" aria-label="Choose QR type">
           <TypeSelector value={type} onChange={setType} />
+        </section>
+
+        <div className="app-area-main">
+          <div className="app-area-intro">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-[22px] font-semibold tracking-tight text-ink sm:text-[26px]">
+                    Create beautiful QR codes in seconds
+                  </h1>
+                  <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-stroke bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-2 sm:inline-flex">
+                    <ShieldCheck size={12} className="text-accent" aria-hidden />
+                    100% private
+                  </span>
+                </div>
+                <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-2 sm:text-sm">
+                  Pick a type, drop in your content, and download a crisp, scannable QR code —
+                  all on this device.
+                </p>
+              </div>
+            </div>
+          </div>
 
           <section
             key={type}
             aria-labelledby="form-heading"
-            className="animate-fade-up min-w-0 rounded-xl border border-stroke bg-surface shadow-card"
+            className="app-area-form animate-fade-up min-w-0 rounded-xl border border-stroke bg-surface shadow-card"
           >
             <div className="flex items-start gap-3 border-b border-stroke px-5 pb-4 pt-5 sm:px-6">
               <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-accent-soft text-accent">
@@ -238,9 +251,26 @@ function AppWorkspace({ settings, history, pendingPayload, onPendingUsed }: AppW
               </form>
             </div>
           </section>
+
+          <div className="app-area-custom min-w-0">
+            <QRCustomizer style={style} update={updateStyle} />
+          </div>
+
+          <section className="app-area-history min-w-0" id="history-section">
+            <HistoryPanel
+              items={history.items}
+              available={history.available}
+              enabled={history.enabled}
+              onRegenerate={handleRegenerate}
+              onRemove={history.remove}
+              onClear={history.clear}
+              open={historyOpen}
+              onToggleOpen={onToggleHistory}
+            />
+          </section>
         </div>
 
-        <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start lg:row-span-2">
+        <aside className="app-area-preview min-w-0">
           <PreviewPanel
             type={type}
             content={content}
@@ -251,18 +281,6 @@ function AppWorkspace({ settings, history, pendingPayload, onPendingUsed }: AppW
             onReset={handleReset}
           />
         </aside>
-
-        <div className="min-w-0 space-y-6">
-          <QRCustomizer style={style} update={updateStyle} />
-          <HistoryPanel
-            items={history.items}
-            available={history.available}
-            enabled={history.enabled}
-            onRegenerate={handleRegenerate}
-            onRemove={history.remove}
-            onClear={history.clear}
-          />
-        </div>
       </div>
     </div>
   )
@@ -345,11 +363,22 @@ export default function App() {
   const history = useHistory(settings.historyEnabled)
   const [mode, setMode] = useState<AppMode>('create')
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const [pendingPayload, setPendingPayload] = useState<string | null>(null)
 
   const handleScanResult = (payload: string) => {
     setPendingPayload(payload)
     setMode('create')
+  }
+
+  const openHistory = () => {
+    setHistoryOpen(true)
+    requestAnimationFrame(() => {
+      document.getElementById('history-section')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      })
+    })
   }
 
   return (
@@ -361,6 +390,9 @@ export default function App() {
           mode={mode}
           onModeChange={setMode}
           onOpenSettings={() => setSettingsOpen(true)}
+          historyOpen={historyOpen}
+          onOpenHistory={openHistory}
+          onCloseHistory={() => setHistoryOpen(false)}
         />
         {mode === 'scan' ? (
           <Suspense
@@ -389,6 +421,8 @@ export default function App() {
             history={history}
             pendingPayload={pendingPayload}
             onPendingUsed={() => setPendingPayload(null)}
+            historyOpen={historyOpen}
+            onToggleHistory={() => setHistoryOpen((o) => !o)}
           />
         )}
         <Footer />

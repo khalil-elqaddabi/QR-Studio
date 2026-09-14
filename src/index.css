@@ -2,55 +2,72 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ============================== Design tokens ============================== */
+/* ============================== Domains ====================================
+/* QR Studio — cool paper, deep navy ink, one signature indigo accent.
+/* A calm, professional workspace for crafting QR codes: no gradients, no
+/* glass, no glow. Precise, quiet and fully client-side.
+/* ========================================================================== */
 
 :root {
-  /* Surfaces */
-  --c-page: #f6f4f0;
+  /* Surfaces — cool paper */
+  --c-page: #f4f6fb;
   --c-surface: #ffffff;
-  --c-surface-2: #f2f0eb;
-  --c-stroke: #e6e2da;
-  --c-stroke-strong: #d5d0c6;
+  --c-surface-2: #eef1f8;
+  --c-surface-3: #e2e7f3;
 
-  /* Text */
-  --c-ink: #1c1917;
-  --c-ink-2: #57534e;
-  --c-ink-3: #9b948b;
+  /* Strokes — cool hairlines */
+  --c-stroke: #dfe4ef;
+  --c-stroke-strong: #c3cbdd;
 
-  /* Brand */
-  --c-accent: #ae4d00;
+  /* Ink — deep navy */
+  --c-ink: #1b2337;
+  --c-ink-2: #46506c;
+  --c-ink-3: #8b94ad;
+
+  /* Brand — signature indigo */
+  --c-accent: #4050c4;
   --c-accent-ink: #ffffff;
-  --c-accent-soft: #fbeddb;
+  --c-accent-soft: #e7eafa;
+  --c-accent-hover: #34419f;
 
   /* Semantic */
-  --c-danger: #dc2626;
+  --c-success: #157f4c;
+  --c-warning: #b7791f;
+  --c-danger: #c5363e;
+  --c-overlay: rgb(20 26 48 / 0.45);
 
-  /* Elevation */
-  --sh-card: 0 1px 2px 0 rgb(28 25 23 / 0.04), 0 14px 34px -26px rgb(28 25 23 / 0.22);
-  --sh-pop: 0 18px 44px -16px rgb(28 25 23 / 0.28);
+  /* Elevation — cool, low-key */
+  --sh-card: 0 1px 2px 0 rgb(15 21 45 / 0.05), 0 16px 36px -28px rgb(15 21 45 / 0.2);
+  --sh-pop: 0 24px 52px -20px rgb(13 18 40 / 0.3);
 }
 
 .dark {
-  --c-page: #12110f;
-  --c-surface: #1a1916;
-  --c-surface-2: #23211d;
-  --c-stroke: #2e2b26;
-  --c-stroke-strong: #423e36;
-  --c-ink: #f4f2ee;
-  --c-ink-2: #a9a298;
-  --c-ink-3: #71695f;
-  --c-accent: #e8a14a;
-  --c-accent-ink: #17130e;
-  --c-accent-soft: #34281a;
-  --c-danger: #f87171;
-  --sh-card: 0 1px 2px 0 rgb(0 0 0 / 0.35), 0 14px 34px -26px rgb(0 0 0 / 0.55);
-  --sh-pop: 0 18px 44px -16px rgb(0 0 0 / 0.7);
+  --c-page: #0f1428;
+  --c-surface: #151b33;
+  --c-surface-2: #1d2440;
+  --c-surface-3: #262e4f;
+  --c-stroke: #2c3557;
+  --c-stroke-strong: #3d4770;
+  --c-ink: #e9edfb;
+  --c-ink-2: #a5adcc;
+  --c-ink-3: #6f79a0;
+  --c-accent: #93a1ff;
+  --c-accent-ink: #0f1428;
+  --c-accent-soft: #2a3157;
+  --c-accent-hover: #a6b2ff;
+  --c-success: #4fc188;
+  --c-warning: #e0b452;
+  --c-danger: #ef6674;
+  --c-overlay: rgb(4 6 16 / 0.62);
+  --sh-card: 0 1px 2px 0 rgb(0 0 0 / 0.14), 0 16px 36px -28px rgb(0 0 0 / 0.5);
+  --sh-pop: 0 24px 52px -20px rgb(0 0 0 / 0.6);
 }
 
 @theme inline {
   --color-page: var(--c-page);
   --color-surface: var(--c-surface);
   --color-surface-2: var(--c-surface-2);
+  --color-surface-3: var(--c-surface-3);
   --color-stroke: var(--c-stroke);
   --color-stroke-strong: var(--c-stroke-strong);
   --color-ink: var(--c-ink);
@@ -59,12 +76,22 @@
   --color-accent: var(--c-accent);
   --color-accent-ink: var(--c-accent-ink);
   --color-accent-soft: var(--c-accent-soft);
+  --color-accent-hover: var(--c-accent-hover);
+  --color-success: var(--c-success);
+  --color-warning: var(--c-warning);
   --color-danger: var(--c-danger);
+  --color-overlay: var(--c-overlay);
   --shadow-card: var(--sh-card);
   --shadow-pop: var(--sh-pop);
   --font-sans:
-    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-serif:
+    "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman",
+    serif;
+  --font-mono:
+    ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Menlo, Consolas,
+    monospace;
 }
 
 /* ================================== Base ================================== */
@@ -88,10 +115,9 @@ p {
 }
 
 ::selection {
-  background-color: color-mix(in srgb, var(--c-accent) 22%, transparent);
+  background-color: var(--c-accent-soft);
 }
 
-/* Autofill must follow the current surface in both themes. */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -102,22 +128,93 @@ textarea:-webkit-autofill {
   transition: background-color 9999s ease-in-out 0s;
 }
 
-/* Safe areas for standalone / notch devices */
-.pt-safe {
-  padding-top: max(env(safe-area-inset-top), 0px);
-}
-.pb-safe {
-  padding-bottom: max(env(safe-area-inset-bottom), 0px);
-}
-.px-safe {
-  padding-inline: max(env(safe-area-inset-left), env(safe-area-inset-right), 0px);
+/* ============================== App layout =================================
+/* Book-style workspace: left type rail, center column, right sticky preview.
+/* On mobile the columns stack in a single reading order.                    */
+
+.app-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "intro"
+    "type"
+    "form"
+    "preview"
+    "custom"
+    "history";
+  gap: 1.25rem;
+  align-items: start;
 }
 
-/* Subtle scrollbars on desktop */
-@media (min-width: 768px) {
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--c-stroke-strong) transparent;
+.app-layout > * {
+  min-width: 0;
+}
+
+.app-layout > .app-area-main > * {
+  min-width: 0;
+}
+
+/* On mobile the center wrapper is transparent so its children participate
+/* directly in the single-column grid, keeping the natural reading order.   */
+.app-area-main {
+  display: contents;
+}
+
+.app-area-intro {
+  grid-area: intro;
+}
+.app-area-type {
+  grid-area: type;
+}
+.app-area-form {
+  grid-area: form;
+}
+.app-area-preview {
+  grid-area: preview;
+}
+.app-area-custom {
+  grid-area: custom;
+}
+.app-area-history {
+  grid-area: history;
+}
+
+@media (min-width: 1024px) {
+  .app-layout {
+    grid-template-columns: 220px minmax(0, 1fr) minmax(300px, 372px);
+    grid-template-areas: "type main preview";
+    column-gap: 2.5rem;
+  }
+
+  .app-area-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .app-area-type {
+    position: sticky;
+    top: 4.5rem;
+    max-height: calc(100dvh - 5.5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    padding-right: 0.25rem;
+  }
+
+  .app-area-type::-webkit-scrollbar {
+    display: none;
+  }
+
+  .app-area-preview {
+    position: sticky;
+    top: 4.5rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .app-area-history {
+    scroll-margin-top: 5rem;
   }
 }
 
@@ -125,16 +222,100 @@ textarea:-webkit-autofill {
 
 .checkerboard {
   background-color: #ffffff;
-  background-image: repeating-conic-gradient(#eceae4 0% 25%, #ffffff 0% 50%);
+  background-image: repeating-conic-gradient(#e9edf7 0% 25%, #ffffff 0% 50%);
   background-size: 18px 18px;
 }
 
-.dark .checkerboard {
-  background-color: #ffffff;
-  background-image: repeating-conic-gradient(#eceae4 0% 25%, #ffffff 0% 50%);
+/* ============================== Form controls ============================== */
+
+/* Range slider */
+.qr-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--c-accent) 55%, var(--c-stroke-strong)),
+    var(--c-stroke-strong)
+  );
+  outline-offset: 3px;
 }
 
-/* ============================ Animations ================================== */
+.qr-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 17px;
+  width: 17px;
+  border-radius: 9999px;
+  background-color: var(--c-surface);
+  border: 2px solid var(--c-accent);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.22);
+  cursor: pointer;
+}
+
+.qr-range::-moz-range-thumb {
+  height: 17px;
+  width: 17px;
+  border-radius: 9999px;
+  background-color: var(--c-surface);
+  border: 2px solid var(--c-accent);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.22);
+  cursor: pointer;
+}
+
+.qr-range::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background-color: var(--c-stroke);
+}
+
+.qr-range:disabled::-webkit-slider-thumb,
+.qr-range:disabled::-moz-range-thumb {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.qr-range:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--c-accent) 50%, transparent);
+}
+
+/* Color input */
+.qr-color-input {
+  -webkit-appearance: none;
+  appearance: none;
+  outline-offset: 2px;
+}
+
+.qr-color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.qr-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 7px;
+}
+
+.qr-color-input::-moz-color-swatch {
+  border: none;
+  border-radius: 7px;
+}
+
+.qr-color-input:focus-visible {
+  outline: 2px solid var(--c-accent);
+}
+
+/* ================================ Scrollbars =============================== */
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ================================ Animations =============================== */
 
 @keyframes toast-in {
   from {
@@ -150,7 +331,7 @@ textarea:-webkit-autofill {
 @keyframes chip-in {
   from {
     opacity: 0;
-    transform: translateY(-3px);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
@@ -206,88 +387,20 @@ textarea:-webkit-autofill {
   }
 }
 
-/* ============================== Range slider ============================== */
+/* ====================== Safe areas + mobile tuning ======================== */
 
-.qr-range {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 6px;
-  border-radius: 9999px;
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--c-accent) 55%, var(--c-stroke-strong)),
-    var(--c-stroke-strong)
-  );
-  outline-offset: 4px;
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top), 0px);
 }
 
-.qr-range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 18px;
-  width: 18px;
-  border-radius: 9999px;
-  background-color: var(--c-surface);
-  border: 2px solid var(--c-accent);
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
-  cursor: pointer;
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
 }
 
-.qr-range::-moz-range-thumb {
-  height: 16px;
-  width: 16px;
-  border-radius: 9999px;
-  background-color: var(--c-surface);
-  border: 2px solid var(--c-accent);
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
-  cursor: pointer;
+.px-safe {
+  padding-inline: max(env(safe-area-inset-left), env(safe-area-inset-right), 0px);
 }
 
-.qr-range::-moz-range-track {
-  height: 6px;
-  border-radius: 9999px;
-  background-color: var(--c-stroke);
-}
-
-.qr-range:disabled::-webkit-slider-thumb,
-.qr-range:disabled::-moz-range-thumb {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
-.qr-range:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--c-accent) 45%, transparent);
-}
-
-/* =============================== Color input ============================== */
-
-.qr-color-input {
-  -webkit-appearance: none;
-  appearance: none;
-  outline-offset: 2px;
-}
-
-.qr-color-input::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-
-.qr-color-input::-webkit-color-swatch {
-  border: none;
-  border-radius: 7px;
-}
-
-.qr-color-input::-moz-color-swatch {
-  border: none;
-  border-radius: 7px;
-}
-
-.qr-color-input:focus-visible {
-  outline: 2px solid var(--c-accent);
-}
-
-/* ================================ Mobile ================================== */
-
-/* Keep native zoom disabled distance by forcing a usable virtual keyboard size. */
 @media (max-width: 420px) {
   html {
     font-size: 16px;
