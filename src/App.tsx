@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { ScanLine, ShieldCheck } from 'lucide-react'
+import { ScanLine, Sparkles } from 'lucide-react'
 import Header from './components/Header'
 import TypeSelector, { TypeIcon } from './components/TypeSelector'
 import PreviewPanel from './components/PreviewPanel'
@@ -200,44 +200,46 @@ function AppWorkspace({
   const meta = TYPE_META[type]
 
   return (
-    <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pt-8 lg:px-8">
-      <div className="app-layout">
-        <section className="app-area-type" aria-label="Choose QR type">
+    <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pt-8 lg:px-8 lg:pb-12">
+      <div className="app-shell">
+        <aside className="app-shell-sidebar" aria-label="QR type sidebar">
           <TypeSelector value={type} onChange={setType} />
-        </section>
+          <div className="mt-4 hidden rounded-2xl border border-stroke bg-gradient-to-br from-accent-soft to-surface-2 p-4 lg:block">
+            <p className="flex items-center gap-2 text-sm font-semibold text-accent">
+              <Sparkles size={15} strokeWidth={2} aria-hidden />
+              Kind reminder
+            </p>
+            <p className="mt-1.5 italic leading-relaxed text-[13px] text-ink-2">
+              Every code is generated right here on your device — nothing is sent anywhere.
+            </p>
+          </div>
+        </aside>
 
-        <div className="app-area-main">
-          <div className="app-area-intro">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-[22px] font-semibold tracking-tight text-ink sm:text-[26px]">
-                    Create beautiful QR codes in seconds
-                  </h1>
-                  <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-stroke bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-2 sm:inline-flex">
-                    <ShieldCheck size={12} className="text-accent" aria-hidden />
-                    100% private
-                  </span>
-                </div>
-                <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-2 sm:text-sm">
-                  Pick a type, drop in your content, and download a crisp, scannable QR code —
-                  all on this device.
-                </p>
-              </div>
-            </div>
+        <main aria-label="Create workspace" className="app-shell-main">
+          <div className="app-shell-intro min-w-0">
+            <span className="inline-flex items-center rounded-full border border-accent/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">
+              QR code generator
+            </span>
+            <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
+              Create a QR code
+            </h1>
+            <p className="mt-2 max-w-xl text-base leading-relaxed text-ink-2">
+              Pick a type, drop in your content, and download a crisp, scannable code — all on
+              this device.
+            </p>
           </div>
 
           <section
             key={type}
             aria-labelledby="form-heading"
-            className="app-area-form animate-fade-up min-w-0 rounded-xl border border-stroke bg-surface shadow-card"
+            className="app-shell-form animate-fade-up min-w-0 rounded-2xl border border-stroke bg-surface shadow-card"
           >
-            <div className="flex items-start gap-3 border-b border-stroke px-5 pb-4 pt-5 sm:px-6">
-              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-accent-soft text-accent">
+            <div className="flex items-start gap-3 border-b border-stroke px-4 py-4 sm:px-5">
+              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
                 <TypeIcon type={type} size={17} />
               </span>
               <div className="min-w-0">
-                <h2 id="form-heading" className="text-[15px] font-semibold tracking-tight text-ink">
+                <h2 id="form-heading" className="text-base font-semibold tracking-tight text-ink">
                   {meta.title}
                 </h2>
                 <p className="mt-0.5 text-[13px] leading-relaxed text-ink-2">
@@ -245,18 +247,18 @@ function AppWorkspace({
                 </p>
               </div>
             </div>
-            <div className="p-5 sm:p-6">
+            <div className="p-4 sm:p-5">
               <form onSubmit={(e) => e.preventDefault()} noValidate className="space-y-4">
                 {renderForm(type, content, update, errors, detectedChip, meta.label, meta.placeholder)}
               </form>
             </div>
           </section>
 
-          <div className="app-area-custom min-w-0">
+          <div className="app-shell-custom min-w-0">
             <QRCustomizer style={style} update={updateStyle} />
           </div>
 
-          <section className="app-area-history min-w-0" id="history-section">
+          <section className="app-shell-history min-w-0" id="history-section">
             <HistoryPanel
               items={history.items}
               available={history.available}
@@ -268,19 +270,19 @@ function AppWorkspace({
               onToggleOpen={onToggleHistory}
             />
           </section>
-        </div>
 
-        <aside className="app-area-preview min-w-0">
-          <PreviewPanel
-            type={type}
-            content={content}
-            style={style}
-            payload={payload}
-            hasErrors={hasErrors}
-            defaultFormat={settings.defaultDownloadFormat}
-            onReset={handleReset}
-          />
-        </aside>
+          <aside className="app-shell-preview min-w-0">
+            <PreviewPanel
+              type={type}
+              content={content}
+              style={style}
+              payload={payload}
+              hasErrors={hasErrors}
+              defaultFormat={settings.defaultDownloadFormat}
+              onReset={handleReset}
+            />
+          </aside>
+        </main>
       </div>
     </div>
   )
@@ -333,8 +335,8 @@ function renderForm(
 
 function ScanLoadingIcon() {
   return (
-    <span className="flex h-12 w-12 animate-pulse-soft items-center justify-center rounded-2xl bg-surface-2 text-accent">
-      <ScanLine size={22} aria-hidden />
+    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-2 text-ink-2 ring-1 ring-stroke">
+      <ScanLine size={20} aria-hidden />
     </span>
   )
 }
@@ -342,13 +344,13 @@ function ScanLoadingIcon() {
 function Footer() {
   const { toast } = useToast()
   return (
-    <footer className="px-safe border-t border-stroke py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+    <footer className="px-safe mt-auto border-t border-stroke py-6 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8">
       <p className="text-center text-xs text-ink-3">
         QR Studio — free, private and fully client-side.{' '}
         <button
           type="button"
           onClick={() => toast('Everything runs in your browser — nothing is uploaded.')}
-          className="font-medium text-ink-2 underline decoration-stroke-strong underline-offset-2 transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+          className="font-medium text-ink-2 underline decoration-stroke-strong underline-offset-2 transition-colors hover:text-accent focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
         >
           How it works
         </button>
@@ -383,7 +385,12 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <div className="flex min-h-screen flex-col">
+      <div className="isolate flex min-h-screen flex-col">
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+          <div className="decor-blob decor-blob-peach -top-24 right-[-6%] h-80 w-80 opacity-80" />
+          <div className="decor-blob decor-blob-purple right-[22%] top-28 h-64 w-64 opacity-60" />
+          <div className="decor-blob decor-blob-purple -left-24 top-[36rem] h-80 w-80 opacity-40" />
+        </div>
         <Header
           theme={theme}
           onToggleTheme={toggle}
@@ -397,10 +404,10 @@ export default function App() {
         {mode === 'scan' ? (
           <Suspense
             fallback={
-              <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-8 sm:px-6 lg:px-8">
+              <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-8 sm:px-6 lg:px-8 lg:pb-12">
                 <div
                   role="status"
-                  className="flex min-h-80 flex-col items-center justify-center gap-3 rounded-xl border border-stroke bg-surface shadow-card"
+                  className="flex min-h-80 flex-col items-center justify-center gap-3 rounded-2xl border border-stroke bg-surface shadow-card"
                 >
                   <ScanLoadingIcon />
                   <p className="text-sm text-ink-2">Loading scanner…</p>
@@ -408,7 +415,7 @@ export default function App() {
               </div>
             }
           >
-            <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pt-8 lg:px-8">
+            <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pt-8 lg:px-8 lg:pb-12">
               <ScannerPanel
                 onUsePayload={handleScanResult}
                 onClose={() => setMode('create')}

@@ -27,8 +27,14 @@ export function useToast() {
   return ctx
 }
 
+const TONE_SPOT: Record<Tone, string> = {
+  success: 'bg-emerald-500',
+  error: 'bg-danger',
+  info: 'bg-accent',
+}
+
 const TONE_ICON: Record<Tone, ReactNode> = {
-  success: <CheckCircle2 size={16} className="shrink-0 text-emerald-500" aria-hidden />,
+  success: <CheckCircle2 size={16} className="shrink-0 text-emerald-400" aria-hidden />,
   error: <CircleAlert size={16} className="shrink-0 text-danger" aria-hidden />,
   info: <Info size={16} className="shrink-0 text-accent" aria-hidden />,
 }
@@ -37,10 +43,13 @@ function ToastItem({ message, tone }: Omit<ToastItem, 'id'>) {
   return (
     <div
       role="status"
-      className="animate-toast-in pointer-events-auto flex items-center gap-2.5 rounded-xl border border-stroke bg-surface/95 px-3.5 py-2.5 text-sm font-medium text-ink shadow-pop backdrop-blur-sm"
+      className="animate-toast-in pointer-events-auto flex items-center gap-3 overflow-hidden rounded-2xl bg-ink py-2.5 pl-4 pr-5 text-surface shadow-pop"
     >
-      {TONE_ICON[tone]}
-      <span className="max-w-[16rem] truncate sm:max-w-sm">{message}</span>
+      <span className={`h-4 w-1 shrink-0 rounded-full ${TONE_SPOT[tone]}`} aria-hidden="true" />
+      <span className="flex items-center gap-2">
+        {TONE_ICON[tone]}
+        <span className="max-w-[16rem] truncate text-[13px] font-medium sm:max-w-sm">{message}</span>
+      </span>
     </div>
   )
 }
@@ -64,7 +73,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div
         aria-live="polite"
-        className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center gap-2 px-4 sm:bottom-6"
+        className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center gap-2 px-4 pb-[4.75rem] lg:bottom-6 lg:pb-0"
       >
         {toasts.map((t) => (
           <ToastItem key={t.id} message={t.message} tone={t.tone} />

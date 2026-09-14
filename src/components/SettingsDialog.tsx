@@ -29,7 +29,7 @@ export default function SettingsDialog({
 }: SettingsDialogProps) {
   return (
     <Dialog open={open} onClose={onClose} title="Settings">
-      <div className="max-h-[calc(85dvh-4rem)] space-y-5 overflow-y-auto pr-1">
+      <div className="max-h-[calc(85dvh-4rem)] space-y-6 overflow-y-auto pr-1">
         <SettingGroup title="History">
           <Switch
             id="settings-history"
@@ -82,13 +82,13 @@ export default function SettingsDialog({
           </Field>
         </SettingGroup>
 
-        <SettingGroup title="Privacy" hint="Built for trust">
-          <div className="rounded-[10px] border border-stroke bg-surface-2/60 p-3.5">
+        <SettingGroup title="Privacy">
+          <div className="rounded-xl bg-surface-2 p-4">
             <p className="flex items-center gap-2 text-[13px] font-semibold text-ink">
               <ShieldCheck size={15} className="shrink-0 text-accent" aria-hidden />
               Private by design
             </p>
-            <p className="mt-1 text-xs leading-relaxed text-ink-3">
+            <p className="mt-1 text-xs leading-relaxed text-ink-2">
               QR Studio runs entirely in your browser. Your content, history, settings and
               uploads never leave this device and are never uploaded anywhere.
             </p>
@@ -100,7 +100,7 @@ export default function SettingsDialog({
           <button
             type="button"
             onClick={reset}
-            className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-stroke bg-surface px-3 text-xs font-medium text-ink-2 transition-colors hover:border-stroke-strong hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 active:scale-95"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-stroke bg-surface px-3 text-xs font-medium text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
           >
             <RotateCcw size={13} aria-hidden />
             Reset defaults
@@ -121,10 +121,10 @@ function SettingGroup({
   children: React.ReactNode
 }) {
   return (
-    <div className="space-y-3 rounded-[10px] border border-stroke bg-surface-2/40 p-4">
-      <div>
+    <div>
+      <div className="mb-3">
         <h3 className="text-[13px] font-semibold text-ink">{title}</h3>
-        {hint && <p className="text-[11px] text-ink-3">{hint}</p>}
+        {hint && <p className="mt-0.5 text-[11px] text-ink-3">{hint}</p>}
       </div>
       <div className="space-y-4">{children}</div>
     </div>

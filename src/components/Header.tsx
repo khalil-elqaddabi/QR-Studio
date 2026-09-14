@@ -1,55 +1,7 @@
-import {
-  Clock3,
-  Moon,
-  PenLine,
-  ScanLine,
-  Settings,
-  Sun,
-} from 'lucide-react'
+import { Clock3, Moon, PenLine, ScanLine, Sun } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
 import type { AppMode } from '../App'
 import { cn } from '../lib/cn'
-
-/* ------------------------- Brand mark — indigo tile ------------------------ */
-/* A solid brand tile holding a white QR finder pattern: three full frames,
-/* one leader cell and one softened pixel. Every code the app mints carries
-/* the same disciplined, ink-and-indigo identity.                             */
-
-export function BrandMark({ className }: { className?: string }) {
-  const cells = [
-    '11100',
-    '10100',
-    '11110',
-    '00101',
-    '01010',
-  ]
-  return (
-    <svg
-      viewBox="0 0 32 32"
-      aria-hidden="true"
-      focusable="false"
-      className={cn('h-8 w-8 shrink-0', className)}
-    >
-      {cells.flatMap((row, y) =>
-        row.split('').map((bit, x) => {
-          if (bit !== '1') return null
-          const accent = y === 2 && x === 3
-          return (
-            <rect
-              key={`${x}-${y}`}
-              x={0.75 + x * 6.5}
-              y={0.75 + y * 6.5}
-              width={5}
-              height={5}
-              rx={1.2}
-              className={accent ? 'fill-accent-ink/70' : 'fill-accent-ink'}
-            />
-          )
-        }),
-      )}
-    </svg>
-  )
-}
 
 interface HeaderProps {
   theme: Theme
@@ -62,6 +14,12 @@ interface HeaderProps {
   onCloseHistory?: () => void
 }
 
+const NAV_ITEMS: { mode: AppMode; key: 'create' | 'scan' | 'history'; label: string; icon: React.ReactNode }[] = [
+  { mode: 'create', key: 'create', label: 'Create', icon: <PenLine size={15} aria-hidden /> },
+  { mode: 'scan', key: 'scan', label: 'Scan', icon: <ScanLine size={15} aria-hidden /> },
+  { mode: 'create', key: 'history', label: 'History', icon: <Clock3 size={15} aria-hidden /> },
+]
+
 export default function Header({
   theme,
   onToggleTheme,
@@ -73,136 +31,151 @@ export default function Header({
   onCloseHistory = () => {},
 }: HeaderProps) {
   const isDark = theme === 'dark'
-
-  const railItem = (
-    active: boolean,
-    label: string,
-    icon: React.ReactNode,
-    onClick: () => void,
-  ) => (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] px-3 text-[13px] font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 active:scale-[0.97]',
-        active
-          ? 'bg-accent text-accent-ink shadow-[0_1px_2px_rgb(15_21_45_/_0.22)]'
-          : 'text-ink-2 hover:bg-surface-2 hover:text-ink',
-      )}
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
-  )
-
   const historyActive = historyOpen && mode !== 'scan'
 
-  const handlePickCreate = () => {
-    onCloseHistory()
-    onModeChange('create')
-  }
-
-  const handlePickScan = () => {
-    onCloseHistory()
-    onModeChange('scan')
-  }
-
+  const handlePickCreate = () => { onCloseHistory(); onModeChange('create') }
+  const handlePickScan = () => { onCloseHistory(); onModeChange('scan') }
   const handlePickHistory = () => {
-    if (historyOpen) {
-      onCloseHistory()
-    } else {
-      onModeChange('create')
-      onOpenHistory()
-    }
+    if (historyOpen) { onCloseHistory() } else { onModeChange('create'); onOpenHistory() }
   }
 
-  const nav = (
-    <div role="group" aria-label="App mode">
-      {railItem(
-        mode === 'create' && !historyOpen,
-        'Create',
-        <PenLine size={14} aria-hidden />,
-        handlePickCreate,
-      )}
-      {railItem(
-        mode === 'scan',
-        'Scan',
-        <ScanLine size={14} aria-hidden />,
-        handlePickScan,
-      )}
-      {railItem(
-        historyActive,
-        'History',
-        <Clock3 size={14} aria-hidden />,
-        handlePickHistory,
-      )}
-    </div>
+  const isActive = (key: 'create' | 'scan' | 'history') => {
+    if (key === 'history') return historyActive
+    if (key === 'scan') return mode === 'scan'
+    return mode === 'create' && !historyOpen
+  }
+
+  const getAction = (key: 'create' | 'scan' | 'history') => {
+    if (key === 'history') return handlePickHistory
+    if (key === 'scan') return handlePickScan
+    return handlePickCreate
+  }
+
+  const desktopNav = (
+    <nav aria-label="App mode" className="hidden items-center gap-1 self-stretch lg:flex">
+      {NAV_ITEMS.map((item) => {
+        const active = isActive(item.key)
+        return (
+          <button
+            key={item.key}
+            type="button"
+            aria-pressed={active}
+            onClick={getAction(item.key)}
+            className={cn(
+              'relative inline-flex items-center gap-2 self-stretch px-4 text-[13.5px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-page',
+              active
+                ? 'font-semibold text-accent'
+                : 'text-ink-2 hover:text-ink',
+            )}
+          >
+            {item.icon}
+            {item.label}
+            {active && (
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-accent"
+              />
+            )}
+          </button>
+        )
+      })}
+    </nav>
+  )
+
+  const mobileNav = (
+    <nav aria-label="App mode" className="pb-safe grid grid-cols-3">
+      {NAV_ITEMS.map((item) => {
+        const active = isActive(item.key)
+        return (
+          <button
+            key={item.key}
+            type="button"
+            aria-pressed={active}
+            onClick={getAction(item.key)}
+            className={cn(
+              'relative flex h-full min-h-[3.5rem] flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40',
+              active ? 'text-accent' : 'text-ink-3',
+            )}
+          >
+            {item.icon}
+            {item.label}
+            {active && (
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-4 -bottom-px h-[2px] rounded-full bg-accent"
+              />
+            )}
+          </button>
+        )
+      })}
+    </nav>
   )
 
   return (
-    <header className="sticky top-0 z-30 border-b border-stroke bg-page/85 backdrop-blur-md supports-[backdrop-filter]:bg-page/80">
-      <div className="relative mx-auto grid h-14 max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 sm:h-16 sm:px-6 lg:px-8 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-accent text-accent-ink shadow-[0_1px_2px_rgb(15_21_45_/_0.18)]">
-            <BrandMark className="h-6 w-6" />
-          </span>
-          <div className="hidden min-w-0 items-baseline gap-2 sm:flex">
-            <span className="truncate text-[15px] font-semibold tracking-tight text-ink">
+    <>
+      <header className="pt-safe sticky top-0 z-30 border-b border-stroke bg-surface/80 backdrop-blur-md">
+        <div className="mx-auto flex h-[4.5rem] max-w-[1400px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+          {/* Left — logo + app name */}
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink text-page">
+              <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false" className="h-5 w-5">
+                {[
+                  '11100', '10100', '11110', '00101', '01110',
+                ].flatMap((row, y) =>
+                  row.split('').map((bit, x) => {
+                    if (bit !== '1') return null
+                    return (
+                      <rect
+                        key={`${x}-${y}`}
+                        x={0.75 + x * 6.5}
+                        y={0.75 + y * 6.5}
+                        width={5}
+                        height={5}
+                        rx={1.2}
+                        fill="currentColor"
+                      />
+                    )
+                  }),
+                )}
+              </svg>
+            </span>
+            <span className="hidden text-lg font-bold tracking-tight text-ink sm:block">
               QR Studio
             </span>
-            <span className="hidden text-[11px] text-ink-3 lg:inline">
-              Free · private · offline-ready
-            </span>
+          </div>
+
+          {/* Center — tabs */}
+          {desktopNav}
+
+          {/* Right — theme toggle + avatar */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-page"
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              aria-label="Open settings"
+              title="Settings"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-avatar text-[13px] font-bold text-white transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-page"
+            >
+              QS
+            </button>
           </div>
         </div>
+      </header>
 
-        <div className="hidden justify-self-center md:block">
-          <div className="flex items-center gap-0.5 rounded-[12px] border border-stroke bg-surface p-1 shadow-[0_8px_28px_-16px_rgb(15_21_45_/_0.2)]">
-            {nav}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 justify-self-end">
-          <IconButton label="Open settings" onClick={onOpenSettings}>
-            <Settings size={17} />
-          </IconButton>
-          <IconButton
-            label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            onClick={onToggleTheme}
-          >
-            {isDark ? <Sun size={17} /> : <Moon size={17} />}
-          </IconButton>
+      <div className="px-safe fixed inset-x-0 bottom-3 z-40 lg:hidden">
+        <div className="mx-auto flex max-w-xs items-center rounded-2xl border border-stroke bg-surface/95 backdrop-blur-md px-1 py-1 shadow-pop">
+          {mobileNav}
         </div>
       </div>
-
-      <div className="border-t border-stroke/80 md:hidden">
-        <div className="mx-auto flex max-w-6xl items-center justify-center gap-1.5 px-3 py-2">
-          {nav}
-        </div>
-      </div>
-    </header>
-  )
-}
-
-function IconButton({
-  label,
-  onClick,
-  children,
-}: {
-  label: string
-  onClick: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-stroke bg-surface text-ink-2 transition-colors hover:border-stroke-strong hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 active:scale-95 sm:h-10 sm:w-10"
-    >
-      {children}
-    </button>
+    </>
   )
 }

@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { Copy, Download, Link, Lock, QrCode, RefreshCcw, Share2, CircleAlert } from 'lucide-react'
+import { Copy, Download, Lightbulb, Link, QrCode, RefreshCcw, Share2, CircleAlert } from 'lucide-react'
 import type { QRContent, QRStyle, QRType } from '../types/qr'
 import { TYPE_LABEL } from '../lib/meta'
-import { TypeIcon } from './TypeSelector'
 import { cn } from '../lib/cn'
 import {
   copyImageToClipboard,
@@ -239,185 +238,173 @@ export default function PreviewPanel({
     <>
       <section
         aria-label="QR preview and download"
-        className="min-w-0 overflow-hidden rounded-xl border border-stroke bg-surface shadow-card"
+        className="min-w-0 rounded-2xl border border-stroke bg-surface p-6 shadow-pop"
       >
-      <div className="p-5 sm:p-6">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">
-            Preview
-          </h2>
-          <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full border border-stroke bg-surface-2 px-2.5 py-1 text-[11px] font-medium text-ink-2">
-            <TypeIcon type={type} size={12} />
-            <span className="truncate">{TYPE_LABEL[type]}</span>
-            <span aria-hidden className="text-ink-3">
-              ·
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-base font-semibold text-ink">Preview</h2>
+          {ready ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-0.5 text-[11px] font-semibold text-success">
+              <span className="h-1.5 w-1.5 rounded-full bg-success" />
+              Ready
             </span>
-            {style.size}px
-          </span>
-        </div>
-
-        <div className="mt-4">
-          {renderError && !hasErrors ? (
-            <div className="flex min-h-64 flex-col items-center justify-center gap-3 px-4 py-10 text-center">
-              <CircleAlert size={26} className="text-danger" aria-hidden />
-              <div>
-                <p className="text-sm font-semibold text-ink">Too much content to encode</p>
-                <p className="mx-auto mt-1 max-w-60 text-[13px] text-ink-2">
-                  Shorten the text, or lower the error correction level in Customize.
-                </p>
-              </div>
-            </div>
-          ) : !ready ? (
-            <div className="flex min-h-64 flex-col items-center justify-center gap-3.5 px-4 py-10 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-stroke bg-surface-2 text-ink-3">
-                <QrCode size={26} strokeWidth={1.75} aria-hidden />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-ink">Your QR code will appear here</p>
-                <p className="mx-auto mt-1 max-w-56 text-[13px] leading-relaxed text-ink-2">
-                  Start typing on the left — the preview updates live.
-                </p>
-              </div>
-            </div>
           ) : (
-            <>
-              <div
-                className={cn(
-                  'flex justify-center rounded-xl py-4',
-                  style.transparent && 'checkerboard',
-                )}
-              >
-                <canvas
-                  ref={canvasRef}
-                  className="h-auto w-full max-w-[300px] rounded-lg shadow-sm"
-                  aria-label={`Generated QR code for ${TYPE_LABEL[type].toLowerCase()}`}
-                />
-              </div>
-              {caption && (
-                <p className="mt-2.5 truncate text-center text-xs text-ink-3" title={caption}>
-                  {caption}
-                </p>
-              )}
-              {validationBadge.label && (
-                <div className="mt-2 flex justify-center">
-                  <p
-                    role="status"
-                    className={cn(
-                      'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium',
-                      validationBadge.tone === 'good' && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-                      validationBadge.tone === 'warn' && 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
-                      validationBadge.tone === 'muted' && 'bg-surface-2 text-ink-3',
-                    )}
-                  >
-                    {validationBadge.label}
-                  </p>
-                </div>
-              )}
-            </>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-medium text-ink-3">
+              Waiting
+            </span>
           )}
         </div>
-      </div>
 
-      <div className="space-y-2.5 border-t border-stroke border-dashed p-5 sm:p-6">
-        <div className="grid grid-cols-2 gap-2.5">
-          <DownloadButton
-            label={`PNG · ${style.size}px`}
-            emphasized={defaultFormat === 'png'}
-            disabled={!ready || busy}
-            onClick={() => handleDownload('png')}
-          />
-          <DownloadButton
-            label="SVG"
-            emphasized={defaultFormat === 'svg'}
-            disabled={!ready || busy}
-            onClick={() => handleDownload('svg')}
-          />
-        </div>
-        <div className="grid grid-cols-4 gap-2">
-          <IconAction
-            label="Copy QR image"
-            hint="Copy QR image"
-            onClick={handleCopyImage}
-            disabled={!ready || busy}
-            icon={<Copy size={16} aria-hidden />}
-            text="Copy"
-          />
-          <IconAction
-            label="Copy content"
-            hint="Copy content"
-            onClick={handleCopyLink}
-            disabled={!ready}
-            icon={<Link size={16} aria-hidden />}
-            text="Content"
-          />
-          <IconAction
-            label="Share QR code"
-            hint="Share"
-            onClick={handleShare}
-            disabled={!ready || busy}
-            icon={<Share2 size={16} aria-hidden />}
-            text="Share"
-          />
-          <IconAction
-            label="Start over"
-            hint="Start over"
-            onClick={onReset}
-            icon={<RefreshCcw size={15} aria-hidden />}
-            text="Reset"
-          />
-        </div>
-        <p className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-ink-3">
-          <Lock size={11} aria-hidden />
-          Generates on your device — nothing is uploaded.
-        </p>
-      </div>
-    </section>
+        {renderError && !hasErrors ? (
+          <div className="mb-5 flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl bg-surface-2 p-6 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-danger/10 text-danger">
+              <CircleAlert size={22} aria-hidden />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-ink">Too much content to encode</p>
+              <p className="mx-auto mt-1 max-w-60 text-[13px] text-ink-2">
+                Shorten the text, or lower the error correction level in Customize.
+              </p>
+            </div>
+          </div>
+        ) : !ready ? (
+          <div className="mb-5 flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl bg-surface-2 p-6 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl text-ink-3">
+              <QrCode size={24} strokeWidth={1.5} aria-hidden />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-ink">No QR code yet</p>
+              <p className="mx-auto mt-1 max-w-52 text-[13px] leading-relaxed text-ink-2">
+                Fill in the form on the left — your code will appear here.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-5 flex flex-col items-center">
+            <div
+              className={cn(
+                'w-full max-w-[280px] rounded-2xl p-4 ring-1',
+                style.transparent
+                  ? 'checkerboard ring-stroke'
+                  : 'bg-white ring-stroke shadow-card',
+              )}
+            >
+              <canvas
+                ref={canvasRef}
+                className="h-auto w-full rounded-xl"
+                aria-label={`Generated QR code for ${TYPE_LABEL[type].toLowerCase()}`}
+              />
+            </div>
+            {caption && (
+              <p className="mt-3 w-full truncate text-center text-[13px] text-ink-2" title={caption}>
+                {caption}
+              </p>
+            )}
+            {validationBadge.label && (
+              <p
+                role="status"
+                className={cn(
+                  'mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium',
+                  validationBadge.tone === 'good' && 'text-emerald-600 dark:text-emerald-400',
+                  validationBadge.tone === 'warn' && 'text-amber-600 dark:text-amber-400',
+                  validationBadge.tone === 'muted' && 'text-ink-3',
+                )}
+              >
+                {validationBadge.label}
+              </p>
+            )}
+          </div>
+        )}
 
-    <Dialog open={shareOpen} onClose={() => setShareOpen(false)} title="Share QR">
-      <div className="space-y-2.5">
-        <p className="pb-1 text-[13px] leading-relaxed text-ink-2">
-          Native sharing isn’t supported in this browser. Choose how you’d like to share this QR code.
-        </p>
-        <button
-          type="button"
-          onClick={handleCopyLink}
-          disabled={!ready}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-ink px-4 text-sm font-semibold text-page shadow-sm transition-all duration-150 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/40 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.99]"
-        >
-          <Copy size={16} aria-hidden />
-          Copy content
-        </button>
-        <button
-          type="button"
-          onClick={() => handleDownload('png')}
-          disabled={!ready || busy}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-all duration-150 hover:border-stroke-strong hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.99]"
-        >
-          <Download size={16} aria-hidden />
-          Download PNG
-        </button>
-        <button
-          type="button"
-          onClick={() => handleDownload('svg')}
-          disabled={!ready || busy}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-all duration-150 hover:border-stroke-strong hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.99]"
-        >
-          <Download size={16} aria-hidden />
-          Download SVG
-        </button>
-        {imageCopyAvailable && (
+        <div className="flex items-center gap-2">
+          <div className="grid flex-1 grid-cols-2 gap-2">
+            <DownloadButton
+              label={`PNG · ${style.size}px`}
+              emphasized={defaultFormat === 'png'}
+              disabled={!ready || busy}
+              onClick={() => handleDownload('png')}
+            />
+            <DownloadButton
+              label="SVG"
+              emphasized={defaultFormat === 'svg'}
+              disabled={!ready || busy}
+              onClick={() => handleDownload('svg')}
+            />
+          </div>
           <button
             type="button"
-            onClick={handleCopyImage}
+            aria-label="Copy QR image"
+            title="Copy QR image"
             disabled={!ready || busy}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-all duration-150 hover:border-stroke-strong hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.99]"
+            onClick={handleCopyImage}
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-stroke text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Copy size={17} aria-hidden />
+          </button>
+        </div>
+
+        <div className="mt-3 grid grid-cols-4 gap-1.5">
+          <IconAction label="Copy QR image" hint="Copy" onClick={handleCopyImage} disabled={!ready || busy} icon={<Copy size={16} aria-hidden />} text="Copy" />
+          <IconAction label="Copy content" hint="Content" onClick={handleCopyLink} disabled={!ready} icon={<Link size={16} aria-hidden />} text="Content" />
+          <IconAction label="Share QR code" hint="Share" onClick={handleShare} disabled={!ready || busy} icon={<Share2 size={16} aria-hidden />} text="Share" />
+          <IconAction label="Start over" hint="Reset" onClick={onReset} icon={<RefreshCcw size={15} aria-hidden />} text="Reset" />
+        </div>
+
+        <div className="mt-4 rounded-xl bg-accent-soft/60 p-4">
+          <p className="flex items-center gap-2 text-[13px] font-semibold text-accent">
+            <Lightbulb size={14} strokeWidth={2} aria-hidden />
+            Private &amp; offline
+          </p>
+          <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">
+            Every QR code is generated right here on your device — nothing is uploaded.
+          </p>
+        </div>
+      </section>
+
+      <Dialog open={shareOpen} onClose={() => setShareOpen(false)} title="Share QR">
+        <div className="space-y-2">
+          <p className="pb-1 text-[13px] leading-relaxed text-ink-2">
+            Native sharing isn’t supported in this browser. Choose how you’d like to share this QR code.
+          </p>
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            disabled={!ready}
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Copy size={16} aria-hidden />
-            Copy image
+            Copy content
           </button>
-        )}
-      </div>
-    </Dialog>
+          <button
+            type="button"
+            onClick={() => handleDownload('png')}
+            disabled={!ready || busy}
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Download size={16} aria-hidden />
+            Download PNG
+          </button>
+          <button
+            type="button"
+            onClick={() => handleDownload('svg')}
+            disabled={!ready || busy}
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Download size={16} aria-hidden />
+            Download SVG
+          </button>
+          {imageCopyAvailable && (
+            <button
+              type="button"
+              onClick={handleCopyImage}
+              disabled={!ready || busy}
+className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-stroke bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Copy size={16} aria-hidden />
+              Copy image
+            </button>
+          )}
+        </div>
+      </Dialog>
     </>
   )
 }
@@ -439,13 +426,13 @@ function DownloadButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'inline-flex h-11 items-center justify-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent/40 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.99]',
+        'inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-[13px] font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:cursor-not-allowed disabled:opacity-40',
         emphasized
-          ? 'bg-ink text-page shadow-sm hover:opacity-90'
-          : 'border border-stroke bg-surface text-ink hover:border-stroke-strong hover:bg-surface-2',
+          ? 'bg-accent text-accent-ink shadow-card hover:bg-accent-hover'
+          : 'border border-stroke bg-surface text-ink hover:bg-surface-2',
       )}
     >
-      <Download size={16} aria-hidden />
+      <Download size={15} aria-hidden />
       {label}
     </button>
   )
@@ -473,10 +460,10 @@ function IconAction({
       title={hint}
       disabled={disabled}
       onClick={onClick}
-      className="inline-flex h-12 flex-col items-center justify-center gap-1 rounded-[10px] border border-stroke bg-surface text-ink-2 transition-all duration-150 hover:border-stroke-strong hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+      className="inline-flex h-12 w-full flex-col items-center justify-center gap-1 rounded-xl border border-stroke text-ink-2 transition-all duration-150 hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
     >
       {icon}
-      <span className="text-[10px] font-medium">{text}</span>
+      <span className="text-[11px] font-medium">{text}</span>
     </button>
   )
 }

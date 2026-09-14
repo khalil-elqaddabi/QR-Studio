@@ -86,30 +86,30 @@ export default function HistoryPanel({
   return (
     <section
       aria-labelledby="history-heading"
-      className="min-w-0 rounded-xl border border-stroke bg-surface shadow-card"
+      className="min-w-0 rounded-2xl border border-stroke bg-surface shadow-card"
     >
       <button
         type="button"
         aria-expanded={open}
         aria-controls="history-content"
         onClick={() => onToggleOpen()}
-        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:px-6"
+        className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-accent sm:px-5"
       >
-        <span className="flex items-center gap-2.5">
-          <History size={16} className="text-ink-3" aria-hidden />
-          <span id="history-heading" className="text-[15px] font-semibold tracking-tight text-ink">
+        <span className="flex min-w-0 items-center gap-2.5">
+          <History size={16} aria-hidden className="shrink-0 text-ink-2" />
+          <span id="history-heading" className="text-sm font-semibold text-ink">
             History
           </span>
           {items.length > 0 && (
-            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium tabular-nums text-ink-2">
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded bg-accent-soft px-1 text-[11px] font-semibold text-accent tabular-nums">
               {items.length}
             </span>
           )}
         </span>
         <ChevronDown
-          size={17}
+          size={16}
           aria-hidden
-          className={cn('text-ink-3 transition-transform duration-200', open && 'rotate-180')}
+          className={cn('shrink-0 text-ink-3 transition-transform duration-200', open && 'rotate-180')}
         />
       </button>
 
@@ -124,32 +124,32 @@ export default function HistoryPanel({
         )}
       >
         <div className={cn('overflow-hidden', !open && 'invisible')}>
-          <div className="space-y-3 border-t border-stroke px-5 py-4 sm:px-6">
+          <div className="border-t border-stroke px-4 py-4 sm:px-5">
             {!available ? (
-              <p className="rounded-[10px] bg-surface-2 px-3.5 py-2.5 text-xs text-ink-3">
+              <p className="rounded-xl bg-surface-2 px-3 py-2.5 text-xs text-ink-3">
                 Local history isn’t available in this browser — the app keeps working, codes
                 just won’t be stored.
               </p>
             ) : !enabled ? (
-              <p className="rounded-[10px] bg-surface-2 px-3.5 py-2.5 text-xs text-ink-3">
+              <p className="rounded-xl bg-surface-2 px-3 py-2.5 text-xs text-ink-3">
                 History is paused. Turn it back on in Settings to start saving codes again.
               </p>
             ) : items.length === 0 ? (
-              <p className="text-xs text-ink-3">
+              <p className="py-2 text-center text-xs text-ink-3">
                 Nothing here yet — codes you create will be saved automatically on this device.
               </p>
             ) : (
               <>
-                <ul className="space-y-2">
+                <ul className="divide-y divide-stroke">
                   {items.map((item) => {
                     const type = (item.type as QRType) in TYPE_LABEL ? (item.type as QRType) : 'text'
                     return (
                       <li
                         key={item.id}
-                        className="flex items-center gap-3 rounded-[10px] border border-stroke bg-surface-2/50 p-2.5 transition-colors hover:bg-surface-2"
+                        className="group flex items-center gap-3 py-2.5 first:pt-0 last:pb-0"
                       >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface shadow-sm text-accent">
-                          <TypeIcon type={type} size={17} />
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-ink-2 dark:bg-surface-3">
+                          <TypeIcon type={type} size={16} />
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[13px] font-medium text-ink">
@@ -187,10 +187,10 @@ export default function HistoryPanel({
                     )
                   })}
                 </ul>
-                <div className="pt-1">
+                <div className="pt-3">
                   {confirmClear ? (
-                    <div className="flex items-center justify-between gap-2 rounded-[10px] bg-danger/10 px-3 py-2 text-xs text-danger">
-                      <span className="font-medium">Clear all history?</span>
+                    <div className="flex items-center justify-between gap-2 rounded-xl bg-danger/10 px-3.5 py-2.5 text-xs text-danger">
+                      <span className="font-semibold">Clear all history?</span>
                       <span className="flex items-center gap-1.5">
                         <button
                           type="button"
@@ -198,14 +198,14 @@ export default function HistoryPanel({
                             onClear()
                             setConfirmClear(false)
                           }}
-                          className="rounded-md px-2 py-1 font-semibold transition-colors hover:bg-danger/15"
+                          className="rounded px-2 py-1 font-semibold transition-colors hover:bg-danger/15"
                         >
                           Clear
                         </button>
                         <button
                           type="button"
                           onClick={() => setConfirmClear(false)}
-                          className="rounded-md px-2 py-1 font-medium text-danger/80 transition-colors hover:bg-danger/10"
+                          className="rounded px-2 py-1 font-medium text-danger/80 transition-colors hover:bg-danger/10"
                         >
                           Cancel
                         </button>
@@ -215,7 +215,7 @@ export default function HistoryPanel({
                     <button
                       type="button"
                       onClick={() => setConfirmClear(true)}
-                      className="rounded-lg px-2 py-1 text-xs font-medium text-ink-3 transition-colors hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+                      className="rounded px-2 py-1 text-xs font-medium text-ink-3 transition-colors hover:text-danger focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                     >
                       Clear all history
                     </button>
@@ -250,10 +250,10 @@ function ActionBtn({
       title={title}
       onClick={onClick}
       className={cn(
-        'inline-flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 active:scale-95',
+        'inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent',
         danger
           ? 'text-ink-3 hover:bg-danger/10 hover:text-danger'
-          : 'text-ink-2 hover:bg-surface hover:text-ink',
+          : 'text-ink-3 hover:bg-surface-2 hover:text-ink',
       )}
     >
       {children}

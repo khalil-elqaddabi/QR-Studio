@@ -77,26 +77,28 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
   return (
     <section
       aria-labelledby="customize-heading"
-      className="min-w-0 rounded-xl border border-stroke bg-surface shadow-card"
+      className="min-w-0 rounded-2xl border border-stroke bg-surface shadow-card"
     >
       <button
         type="button"
         aria-expanded={open}
         aria-controls="customize-content"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:px-6"
+        className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-accent sm:px-5"
       >
-        <span className="flex items-center gap-2.5">
-          <SlidersHorizontal size={16} className="text-ink-3" aria-hidden />
-          <span id="customize-heading" className="text-[15px] font-semibold tracking-tight text-ink">
-            Customize
+        <span className="flex min-w-0 items-center gap-2.5">
+          <SlidersHorizontal size={16} aria-hidden className="shrink-0 text-ink-2" />
+          <span className="min-w-0">
+            <span id="customize-heading" className="block text-sm font-semibold text-ink">
+              Customize
+            </span>
+            <span className="block truncate text-xs text-ink-3 sm:hidden">style · colors · logo</span>
           </span>
-          <span className="hidden text-xs text-ink-3 sm:inline">style · colors · logo</span>
         </span>
         <ChevronDown
-          size={17}
+          size={16}
           aria-hidden
-          className={cn('text-ink-3 transition-transform duration-200', open && 'rotate-180')}
+          className={cn('shrink-0 text-ink-3 transition-transform duration-200', open && 'rotate-180')}
         />
       </button>
 
@@ -111,7 +113,7 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
         )}
       >
         <div className={cn('overflow-hidden', !open && 'invisible')}>
-          <div className="space-y-6 border-t border-stroke px-5 py-5 sm:px-6">
+          <div className="divide-y divide-stroke border-t border-stroke px-4 py-4 sm:px-5">
             {/* Presets */}
             <Section
               open={sections.presets}
@@ -120,7 +122,7 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
               hint="Safe starting combinations"
               id={SECTION_ID.presets}
             >
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-4 gap-2">
                 {PRESETS.map((preset) => {
                   const active = isPresetActive(style, preset)
                   return (
@@ -130,16 +132,14 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
                       title={preset.description}
                       onClick={() => apply(preset)}
                       aria-pressed={active}
-                      className="group flex flex-col items-center gap-1.5 rounded-[10px] border p-2 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/35 active:scale-[0.97]"
+                      className={cn(
+                        'flex flex-col items-center gap-1.5 rounded-xl border p-2 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent',
+                        active
+                          ? 'border-accent bg-accent-soft shadow-card'
+                          : 'border-stroke bg-surface hover:bg-surface-2',
+                      )}
                     >
-                      <span
-                        className={cn(
-                          'rounded-[7px] p-1 transition-shadow duration-150',
-                          active
-                            ? 'border border-accent/60 ring-2 ring-accent/30'
-                            : 'border border-transparent group-hover:border-stroke-strong',
-                        )}
-                      >
+                      <span className="rounded-lg ring-1 ring-stroke/60">
                         <PresetThumb preset={preset} />
                       </span>
                       <span
@@ -253,10 +253,10 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
             >
               {!logo ? (
                 <label
-                  className="flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-stroke-strong bg-surface-2/60 px-4 py-4 text-center transition-colors hover:border-accent hover:bg-accent-soft/50 focus-within:ring-2 focus-within:ring-accent/30"
+                  className="group flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-stroke-strong bg-surface-2/60 px-4 py-5 text-center transition-colors hover:border-accent/50 hover:bg-accent-soft/60 focus-within:ring-1 focus-within:ring-accent"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink-2 shadow-sm">
-                    <Upload size={15} aria-hidden />
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-surface text-ink-2 ring-1 ring-stroke">
+                    <Upload size={14} aria-hidden />
                   </span>
                   <span className="text-[13px] font-medium text-ink">Upload a logo</span>
                   <span className="text-xs text-ink-3">PNG or JPG · processed on your device</span>
@@ -270,13 +270,13 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
                   />
                 </label>
               ) : (
-                <div className="space-y-4 rounded-[10px] border border-stroke bg-surface-2/60 p-3.5">
+                <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-surface shadow-sm">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface ring-1 ring-stroke">
                       {logo.dataUrl ? (
                         <img src={logo.dataUrl} alt="" className="h-full w-full object-cover" />
                       ) : (
-                        <ImageIcon size={18} className="text-ink-3" aria-hidden />
+                        <ImageIcon size={17} className="text-ink-3" aria-hidden />
                       )}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -289,7 +289,7 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
                         update({ logo: null, iconEnabled: true })
                         toast('Logo removed')
                       }}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-[10px] border border-stroke bg-surface px-3 text-xs font-medium text-ink-2 transition-colors hover:border-danger/50 hover:text-danger"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-stroke bg-surface px-3 text-xs font-medium text-ink-2 transition-colors hover:border-danger/50 hover:bg-danger/5 hover:text-danger"
                     >
                       <Trash2 size={14} aria-hidden />
                       Remove
@@ -314,8 +314,8 @@ export default function QRCustomizer({ style, update }: QRCustomizerProps) {
                     ]}
                   />
                   {isLogoRisky(logo.size) && (
-                    <p className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400">
-                      <Bell size={13} aria-hidden />
+                    <p className="flex items-center gap-1.5 rounded-xl bg-amber-500/10 px-2.5 py-2 text-xs font-medium text-amber-700 dark:text-amber-400">
+                      <Bell size={13} className="shrink-0" aria-hidden />
                       Large logos can make scanning harder. Keep it under 30% when possible.
                     </p>
                   )}
@@ -394,13 +394,13 @@ function Section({
   children: ReactNode
 }) {
   return (
-    <div className="rounded-[10px] border border-stroke bg-surface-2/40">
+    <div className="py-4 first:pt-0 last:pb-0">
       <button
         type="button"
         aria-expanded={open}
         aria-controls={id}
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 rounded-[10px] px-3.5 py-2.5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+        className="flex w-full items-center justify-between gap-3 py-0.5 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
       >
         <span className="min-w-0">
           <span className="block text-[13px] font-semibold text-ink">{title}</span>
@@ -419,11 +419,11 @@ function Section({
         aria-hidden={!open}
         className={cn(
           'grid transition-[grid-template-rows] duration-200 ease-out',
-          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+          open ? 'mt-3 grid-rows-[1fr]' : 'grid-rows-[0fr]',
         )}
       >
         <div className={cn('overflow-hidden', !open && 'invisible')}>
-          <div className="space-y-4 border-t border-stroke p-3.5">{children}</div>
+          <div className="space-y-4">{children}</div>
         </div>
       </div>
     </div>

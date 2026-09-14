@@ -46,7 +46,7 @@ export function Field({
       </div>
       {children}
       {error ? (
-        <p id={`${id}-error`} className="text-xs text-danger">
+        <p id={`${id}-error`} className="text-xs font-medium text-danger">
           {error}
         </p>
       ) : hint ? (
@@ -59,7 +59,7 @@ export function Field({
 /* --------------------------------- Inputs --------------------------------- */
 
 const controlBase =
-  'w-full rounded-[10px] border border-stroke bg-surface px-3 py-2.5 text-[15px] text-ink shadow-[0_1px_0_0_rgb(15_21_45_/_0.03)] placeholder:text-ink-3 transition-[border-color,box-shadow,background-color] duration-150 hover:border-stroke-strong focus:border-accent focus:shadow-[0_0_0_3px_var(--c-accent-soft)] focus:outline-none aria-invalid:border-danger aria-invalid:focus:shadow-[0_0_0_3px_rgb(197_54_62_/_0.12)] disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm dark:shadow-none'
+  'w-full rounded-xl border border-stroke bg-surface px-3 py-2 text-[15px] text-ink placeholder:text-ink-3 transition-all duration-150 hover:border-stroke-strong focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/20 focus:shadow-card aria-invalid:border-danger aria-invalid:focus:border-danger aria-invalid:focus:ring-danger/20 disabled:cursor-not-allowed disabled:opacity-55 sm:text-sm'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   invalid?: boolean
@@ -101,7 +101,7 @@ export function Select({ invalid, className, children, ...props }: SelectProps) 
         aria-invalid={invalid || undefined}
         className={cn(
           controlBase,
-          'cursor-pointer appearance-none pr-9 disabled:cursor-not-allowed disabled:opacity-60',
+          'cursor-pointer appearance-none pr-9 disabled:cursor-not-allowed disabled:opacity-55',
           className,
         )}
       >
@@ -141,14 +141,14 @@ export function Switch({ id, checked, onChange, label, description }: SwitchProp
         aria-label={label}
         onClick={() => onChange(!checked)}
         className={cn(
-          'relative mt-0.5 h-6 w-10 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+          'relative mt-0.5 h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent',
           checked ? 'bg-accent' : 'bg-stroke-strong',
         )}
       >
         <span
           className={cn(
-            'absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
-            checked && 'translate-x-4',
+            'absolute left-[3px] top-[3px] h-[18px] w-[18px] rounded-full bg-white transition-transform duration-200',
+            checked && 'translate-x-5',
           )}
         />
       </button>
@@ -173,27 +173,24 @@ export function ColorField({ id, label, value, onChange, hint }: ColorFieldProps
         <label htmlFor={id} className="text-[13px] font-medium text-ink">
           {label}
         </label>
-        <span className="rounded-md border border-stroke bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] leading-4 text-ink-2">
+        <span className="rounded border border-stroke bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] leading-4 text-ink-2">
           {value.toUpperCase()}
         </span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <input
           id={id}
           type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           aria-label={`${label} color picker`}
-          className="qr-color-input h-10 w-12 shrink-0 cursor-pointer rounded-[10px] border border-stroke transition-colors hover:border-stroke-strong"
+          className="qr-color-input h-10 w-11 shrink-0 cursor-pointer rounded-xl border border-stroke"
           style={{ backgroundColor: value, color: '#00000000' }}
         />
         <div
           aria-hidden="true"
-          className="h-10 flex-1 rounded-[10px] border border-stroke"
-          style={{
-            background: `linear-gradient(120deg, ${value} 0%, ${value} 100%)`,
-            opacity: 1,
-          }}
+          className="h-10 flex-1 rounded-xl border border-stroke"
+          style={{ backgroundColor: value }}
         />
       </div>
       {hint && <p className="text-xs leading-relaxed text-ink-3">{hint}</p>}
@@ -245,7 +242,7 @@ export function Slider({
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="qr-range w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+        className="qr-range w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
       />
     </div>
   )
@@ -270,7 +267,7 @@ export function Segmented<T extends string>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className="grid auto-cols-fr grid-flow-col gap-1 rounded-[10px] border border-stroke bg-surface-2 p-1"
+      className="grid auto-cols-fr grid-flow-col gap-1 rounded-xl border border-stroke bg-surface-2 p-1"
     >
       {options.map((option) => (
         <button
@@ -281,10 +278,10 @@ export function Segmented<T extends string>({
           title={option.title}
           onClick={() => onChange(option.value)}
           className={cn(
-            'min-h-9 rounded-lg px-2 py-1.5 text-[13px] font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:px-3',
+            'min-h-8 rounded-lg px-2 py-1.5 text-[13px] font-medium transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-accent sm:px-3',
             value === option.value
-              ? 'bg-surface text-ink shadow-[0_1px_2px_rgb(15_21_45_/_0.1)]'
-              : 'text-ink-2 hover:text-ink',
+              ? 'bg-surface text-ink shadow-card'
+              : 'text-ink-2 hover:text-ink hover:bg-surface-2/70',
           )}
         >
           {option.label}
@@ -322,7 +319,7 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
       aria-label={title}
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
     >
-      <div className="absolute inset-0 bg-ink/40" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 bg-overlay" onClick={onClose} aria-hidden="true" />
       <div className="animate-fade-up relative max-h-[85dvh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-stroke bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-pop sm:max-h-[85vh] sm:rounded-2xl sm:p-6">
         <div className="mb-5 flex items-center justify-between gap-3">
           <h2 className="text-[15px] font-semibold tracking-tight text-ink">{title}</h2>
@@ -330,9 +327,9 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 active:scale-95"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
           >
-            <X size={18} aria-hidden />
+            <X size={17} aria-hidden />
           </button>
         </div>
         {children}
